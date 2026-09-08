@@ -40,26 +40,35 @@ class Paper:
         self.erase()
         self.pen.draw(art.frame, 0, 0)
 
+        # Bootstrap statuses
         if self.app_data.info["bootstrap_percent"] < 100:
             self.pen.draw(art.egg, 10, 0)
+
+        # Network statuses
         elif not self.app_data.info["network_liveness"]:
             self.pen.draw(art.blackout[self.app_data.frame], 9, 0)
-        elif not self.app_data.info["can_establish_circuits"]:
-            self.pen.draw(art.sad[self.app_data.frame], 10 + self.app_data.frame, 0)
         elif not self.app_data.info["has_enough_dir_info"]:
             self.pen.draw(art.confused[self.app_data.frame], 10 + self.app_data.frame, 0)
-        elif not self.app_data.info["good_server_descriptor"]:
-            self.pen.draw(art.embarassed[self.app_data.frame], 10 + self.app_data.frame, 0)
+        elif not self.app_data.info["can_establish_circuits"]:
+            self.pen.draw(art.sad[self.app_data.frame], 10 + self.app_data.frame, 0)
+
+        # Relay network statuses
         elif not self.app_data.info["reachability"]:
             self.pen.draw(art.turned_around[self.app_data.frame], 10 + self.app_data.frame, 0)
-        # elif self.app_data.info["dormant"]:
-        #     self.pen.draw(art.sleep[self.app_data.frame], 10 + self.app_data.frame, 0)
-        elif Flags.MIDDLE_ONLY in self.app_data.flags:
-            self.pen.draw(art.bored[self.app_data.frame], 10 + self.app_data.frame, 0)
-        elif Flags.STABLE not in self.app_data.flags:
-            self.pen.draw(art.unstable[self.app_data.frame], 10 + self.app_data.frame, 0)
+        elif not self.app_data.info["good_server_descriptor"]:
+            self.pen.draw(art.embarassed[self.app_data.frame], 10 + self.app_data.frame, 0)
+
+        # Relay statuses
+        elif Flags.NO_ED_CONSENSUS in self.app_data.flags or {Flags.VALID, Flags.RUNNING} - set(self.app_data.flags):
+            self.pen.draw(art.sad[self.app_data.frame], 10 + self.app_data.frame, 0)
         elif Flags.STALE_DESC in self.app_data.flags:
             self.pen.draw(art.old[self.app_data.frame], 10 + self.app_data.frame, 0)
+        elif Flags.STABLE not in self.app_data.flags:
+            self.pen.draw(art.unstable[self.app_data.frame], 10 + self.app_data.frame, 0)
+        elif Flags.MIDDLE_ONLY in self.app_data.flags:
+            self.pen.draw(art.bored[self.app_data.frame], 10 + self.app_data.frame, 0)
+        elif self.app_data.info["dormant"]:
+            self.pen.draw(art.sleep[self.app_data.frame], 10 + self.app_data.frame, 0)
         else:
             self.pen.draw(art.base[self.app_data.frame], 10 + self.app_data.frame, 0)
 
@@ -84,7 +93,11 @@ class Paper:
             frame_skip = True
 
         self.pen.draw(f"Uptime: {self.app_data.formated_uptime}", 1, 1)
-        self.pen.draw(f"Circuits/Streams: {self.app_data.num_circuits}/{self.app_data.num_streams}", 2, 1)
+        self.pen.draw(
+            f"Connections (N/L/Co/F/Cl): {self.app_data.connection_status_map['NEW']},{self.app_data.connection_status_map['LAUNCHED']},{self.app_data.connection_status_map['CONNECTED']},{self.app_data.connection_status_map['FAILED']},{self.app_data.connection_status_map['CLOSED']}",
+            2,
+            1,
+        )
         self.pen.draw(
             f"Download (CUR/AVG/TOT): {AppData.format_bytes(self.app_data.info['bw_event_cache_down'])} / {AppData.format_bytes(self.app_data.info['bw_avg_down'])} / {AppData.format_bytes(self.app_data.info['traffic_read'])}",
             3,

@@ -12,8 +12,10 @@ class RelayManager:
             self.controller = Controller.from_socket_file(socket_file)
         else:
             self.controller = Controller.from_port(address=ip_addr, port=int(port))  # type:ignore
-            if password:
-                self.controller.authenticate("password")
+        if password:
+            self.controller.authenticate("password")
+        else:
+            self.controller.authenticate()
 
         self.controller.add_event_listener(lambda: True, EventType["BW"])
 
