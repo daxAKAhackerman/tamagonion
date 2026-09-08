@@ -127,13 +127,10 @@ class AppData:
 
     def _get_process_info(self) -> None:
         process = psutil.Process(self.pid)
-        io_counters = process.io_counters()
 
         self.process_info = {
             "cpu": process.cpu_percent(),
             "memory": process.memory_info().rss,
-            "io_read": io_counters.read_bytes,
-            "io_write": io_counters.write_bytes,
         }
 
     @staticmethod

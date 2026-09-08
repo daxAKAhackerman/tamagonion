@@ -110,7 +110,7 @@ class Paper:
 
         if self.app_data.relay_manager.is_local:
             self.pen.draw(
-                f"Process info (CPU/Mem/IO_R/IO_W): {self.app_data.process_info['cpu']}/{self.app_data.process_info['memory']}/{self.app_data.process_info['io_read']}/{self.app_data.process_info['io_write']}/",
+                f"Process info (CPU/Mem): {self.app_data.process_info['cpu']}%/{AppData.format_bytes(self.app_data.process_info['memory'])}",
                 6,
                 1,
             )
