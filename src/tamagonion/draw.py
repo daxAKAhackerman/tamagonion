@@ -106,7 +106,7 @@ class Paper:
         Pen.draw(f"Relay nickname: {self.app_data.relay_name}", 1, 1)
         Pen.draw(f"Uptime: {self.app_data.formated_uptime}", 2, 1)
         Pen.draw(
-            f"Connections (N/L/Co/F/Cl): {self.app_data.connection_status_map['NEW']},{self.app_data.connection_status_map['LAUNCHED']},{self.app_data.connection_status_map['CONNECTED']},{self.app_data.connection_status_map['FAILED']},{self.app_data.connection_status_map['CLOSED']}",
+            f"Connections (N/L/Co/F/Cl): {self.app_data.connection_status_map['NEW']}/{self.app_data.connection_status_map['LAUNCHED']}/{self.app_data.connection_status_map['CONNECTED']}/{self.app_data.connection_status_map['FAILED']}/{self.app_data.connection_status_map['CLOSED']}",
             3,
             1,
         )
@@ -124,7 +124,7 @@ class Paper:
 
         if self.app_data.relay_manager.is_local:
             Pen.draw(
-                f"Process info (CPU/Mem): {self.app_data.process_info['cpu']}%/{AppData.format_bytes(self.app_data.process_info['memory'])}",
+                f"Process info (CPU/Mem): {self.app_data.process_info['cpu']}% / {AppData.format_bytes(self.app_data.process_info['memory'])}",
                 7,
                 1,
             )

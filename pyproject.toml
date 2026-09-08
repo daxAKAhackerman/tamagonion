@@ -1,6 +1,6 @@
 [project]
 name = "tamagonion"
-version = "1.0.0"
+version = "0.0.0"
 description = "This is Stinky, he's running your Tor relay. He mostly loafs around and browses the Web anonymously, but he's more entertaining to look at than a graph!"
 readme = "README.md"
 authors = [
