@@ -58,6 +58,8 @@ class Paper:
             self.pen.draw(art.bored[self.app_data.frame], 10 + self.app_data.frame, 0)
         elif Flags.STABLE not in self.app_data.flags:
             self.pen.draw(art.unstable[self.app_data.frame], 10 + self.app_data.frame, 0)
+        elif Flags.STALE_DESC in self.app_data.flags:
+            self.pen.draw(art.old[self.app_data.frame], 10 + self.app_data.frame, 0)
         else:
             self.pen.draw(art.base[self.app_data.frame], 10 + self.app_data.frame, 0)
 
