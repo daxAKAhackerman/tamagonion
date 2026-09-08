@@ -35,8 +35,6 @@ class AppData:
     info: dict[str, Any]
     process_info: dict[str, Any]
     uptime: float = 0.0
-    num_streams: int = 0
-    num_circuits: int = 0
     connection_status_map: defaultdict[str, int]
     pid: int = 0
     version_status: str = ""
@@ -67,8 +65,8 @@ class AppData:
         self._get_info()
         self._get_orconn_status()
 
-    # TODO: Handle if remote
-    # self._get_process_info()
+        if self.relay_manager.is_local:
+            self._get_process_info()
 
     def _get_flags(self) -> None:
         try:

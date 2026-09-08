@@ -2,9 +2,12 @@ from typing import Self
 
 from stem.control import Controller, EventType
 
+from tamagonion.utils import is_host_local
+
 
 class RelayManager:
     controller: Controller
+    is_local: bool = False
     instance: Self | None = None
 
     def __init(self, ip_addr: str, port: str, password: str | None, socket_file: str | None) -> None:
@@ -16,6 +19,9 @@ class RelayManager:
             self.controller.authenticate("password")
         else:
             self.controller.authenticate()
+
+        if socket_file or is_host_local(ip_addr):
+            self.is_local = True
 
         self.controller.add_event_listener(lambda: True, EventType["BW"])
 

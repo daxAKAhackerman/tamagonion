@@ -108,6 +108,12 @@ class Paper:
         )
         self.pen.draw(f"Version: {self.app_data.version} ({self.app_data.version_status})", 5, 1)
 
+        if self.app_data.relay_manager.is_local:
+            self.pen.draw(
+                f"Process info (CPU/Mem/IO_R/IO_W): {self.app_data.process_info['cpu']}/{self.app_data.process_info['memory']}/{self.app_data.process_info['io_read']}/{self.app_data.process_info['io_write']}/",
+                6,
+                1,
+            )
         # print(f"Flags: {self.app_data.flags}")
         # print(f"Uptime: {self.app_data.uptime}")
         # print(f"PID: {self.app_data.pid}")

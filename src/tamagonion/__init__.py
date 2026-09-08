@@ -30,11 +30,13 @@ def main():
 def get_args():
     parser = argparse.ArgumentParser(
         prog="Tamagonion",
-        description="This is Stinky, he's running your Tor relay. He mostly loafs around and chills, but he's more entertaining to look at that a graph!",
+        description="This is Stinky, he's running your Tor relay. He mostly loafs around and browses the Web anonymously, but he's more entertaining to look at than a graph!",
         epilog="Hack the planet!",
     )
 
-    parser.add_argument("-i", "--ip", help="IP of the Tor relay where the control protocol listens. Defaults to 127.0.0.1.", default="127.0.0.1")
+    parser.add_argument(
+        "-i", "--ip", help="IP of the Tor relay where the control protocol listens. Can also be a hostname. Defaults to 127.0.0.1.", default="127.0.0.1"
+    )
     parser.add_argument("-p", "--port", help="Control port. Defaults to 9051.", default="9051")
     parser.add_argument("-P", "--password", help="Control port password, if any", required=False)
     parser.add_argument("-s", "--socket-file", help="Path to the socket file to use instead of an IP", required=False)
