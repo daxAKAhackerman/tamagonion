@@ -7,10 +7,10 @@ from tamagonion.draw import Paper
 from tamagonion.relay_manager import RelayManager
 
 
-def main():
+def main() -> None:
     args = get_args()
 
-    print("\033[2J\033[H", end="")
+    print("\033[2J\033[H", end="")  # Clear the screen and reset cursor
     relay_manager = RelayManager(ip_addr=args.ip, port=args.port, password=args.password, socket_file=args.socket_file)
     app_data = AppData(relay_manager)
     paper = Paper(app_data)
@@ -27,7 +27,7 @@ def main():
     sys.exit(0)
 
 
-def get_args():
+def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="Tamagonion",
         description="This is Stinky, he's running your Tor relay. He mostly loafs around and browses the Web anonymously, but he's more entertaining to look at than a graph!",

@@ -1,0 +1,114 @@
+# Tamagonion
+
+## Instructions
+
+This is Stinky, it's a Tamagonion and it's running your Tor relay. Tamagonions are cyber creatures that have bravely stepped out of the Tor network to learn what life is like in the clearnet and to help you monitor your relay. It mostly loafs around and browses the Web anonymously, but it's more entertaining to look at than a graph!
+
+```
+             ▌▌
+             ▓▓▀
+         ▄▄▄▀▀▀▀▄▄▄
+        █   ─  ─   █
+       █    ▄  ▄    █
+      █     ▀  ▀     █
+      █      ──      █
+      █              █
+       █▄▄▄▄▄▄▄▄▄▄▄▄█
+```
+
+## Activation
+
+To activate the viewport, use the `tamagonion` command as such:
+
+```bash
+# By default, we will try to connect to the control port at 127.0.0.1:9051
+$ uv run tamagonion
+
+# If you use password authentication, you can supply it with -P or with the TAMAGONION_PASSWORD environment variable
+$ uv run tamagonion -P my_password
+$ TAMAGONION_PASSWORD=my_password uv run tamagonion
+
+# If the port is listening somewhere else, you can specify it with -i and -p
+$ uv run tamagonion -i 192.168.0.10 -p 9999
+
+# If you are connecting using a Unix socket, you can point to it with -s
+$ uv run tamagonion -s /var/run/tor/control
+```
+
+## Status check
+
+```
+┌──────────────────────────────────────────────┐
+│Relay nickname: exitafpwrwmm                  │
+│Uptime: 0d 05h 53m 06s                        │
+│Connections (N/L/Co/F/Cl): 0,0,7,0,0          │
+│Download (Cur/Avg/Tot): 338B / 116B / 2MB     │
+│Upload (Cur/Avg/Tot): 1KB / 152B / 3MB        │
+│Version: 0.4.9.11 (none recommended)          │
+│Process info (CPU/Mem): 0.0%/867MB            │
+│                              ░░░░░░░░        │
+│                             ░╔══════╗░   █▄  │
+│             ▌▌          z   ░║ EXIT ║░ █████ │
+│             ▓▓▀        Z    ░╚══════╝░   █▀  │
+│         ▄▄▄▀▀▀▀▄▄▄   Z       ░░░░░░░░        │
+│        █   ─  ─    ▄▄▄▄▄                     │
+│       █           █  █  █                    │
+│      █    ──  ── █  ▀█▀  █  ╓───┬───╖╤═══╕   │
+│ ____ █      ∙     █  █  █   ║---│---║╧╤══╧╤  │
+││oV2o│█             ▀▀▀▀▀    ║---│---║╒╧══╤╧  │
+│╘════╛ █▄▄▄▄▄▄▄▄▄▄▄▄█        ╙───┴───╜╘═══╧   │
+└───────────────────────────Hit ctrl+c to exit─┘
+```
+
+The top of the viewport contains various information about your relay. More specifically:
+
+- The relay nickname as defined in your Tor configuration
+- The uptime since the Tor daemon has started
+- The number of connections
+  - NEW: We have received a new incoming OR connection, and are starting the server-side handshake.
+  - LAUNCHED: We have launched a new outgoing OR connection, and are starting the client-side handshake.
+  - CONNECTED: The OR connection has been connected and the handshake is done.
+  - FAILED: Our attempt to open the OR connection failed.
+  - CLOSED: The OR connection closed in an unremarkable way.
+- The current, average and total amount of data that was downloaded and uploaded
+- The version of the Tor binary, as well as the recommendation from the consensus (if any)
+- If you are connected locally (localhost or Unix socket), the CPU and memory usage of the Tor daemon
+
+## Biology
+
+Tamagonions are very atuned to a relay's operation. You can know how your relay is going by looking at how Stinky is feeling or behaving.
+
+| Behavior     | Meaning                                                                                                                   |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| Asleep       | The relay is "dormant", meaning it has gone idle due to lack of use or some similar reason.                               |
+| Sad          | The relay doesn't have the both the "Valid" and the "Running" flags, or it has the "NoEdConsensus" flag.                  |
+| Confused     | The relay discarded expired statuses and server descriptors to fall below the desired threshold of directory information. |
+| Embarassed   | A directory authority rejected our descriptor.                                                                            |
+| Looking away | The relay's ORPort is unreachable.                                                                                        |
+| Bored        | The relay has the "MiddleOnly" flag.                                                                                      |
+| Glitchy      | The relay doesn't have the "Stable" flag.                                                                                 |
+| Old          | The relay has the "StaleDesc" flag.                                                                                       |
+| Egg          | The relay is bootstrapping.                                                                                               |
+| Slow         | The relay doesn't have the "Fast" flag.                                                                                   |
+
+## Room status check
+
+Stinky's room can get a bit crowded with things it collected along the way. But every thing it collects means something special to it.
+
+| Object or room state | Meaning                                        |
+| -------------------- | ---------------------------------------------- |
+| Light's out          | The relay believes the network is unreachable. |
+| Exit sign            | The relay has the "Exit" flag.                 |
+| Broken exit sign     | The relay has the "BadExit" flag.              |
+| Books                | The relay has the "HSDir" flag.                |
+| Cassette             | The relay has the "V2Dir" flag.                |
+| Shield               | The relay has the "Guard" flag.                |
+
+## You may also like...
+
+- [Testing Tor Network](https://github.com/daxAKAhackerman/testing-tor-network) - CLI tool to setup a testing TOR network with Docker
+- [Tor HashedControlPassword Brute](https://github.com/daxAKAhackerman/tor-hashed-control-password-brute) - C program to execute a dictionary attack against a Tor HashedControlPassword value
+
+---
+
+> This repository contains no AI-generated code and was made with :heart: by [@daxAKAhackerman](https://github.com/daxAKAhackerman/)

@@ -38,7 +38,9 @@ class AppData:
     connection_status_map: defaultdict[str, int]
     pid: int = 0
     version_status: str = ""
+    relay_name: str = ""
     frame: int = 0
+    frame_skip: bool = False
     instance: Self | None = None
 
     def __init(self, relay_manager: RelayManager) -> None:
@@ -51,6 +53,8 @@ class AppData:
         self.relay_manager = relay_manager
         self._get_version()
         self._get_version_status()
+        self._get_pid()
+        self._get_relay_name()
 
     def __new__(cls, *args, **kwargs) -> Self:
         if cls.instance is None:
@@ -61,7 +65,6 @@ class AppData:
     def update(self) -> None:
         self._get_flags()
         self._get_uptime()
-        self._get_pid()
         self._get_info()
         self._get_orconn_status()
 
@@ -95,6 +98,10 @@ class AppData:
 
     def _get_version_status(self) -> None:
         self.version_status = self.relay_manager.controller.get_info("status/version/current")
+
+    def _get_relay_name(self) -> None:
+        nickname = self.relay_manager.controller.get_conf("Nickname")
+        self.relay_name = nickname or "Unknown"
 
     def _get_info(self) -> None:
         bw_event_cache = self.relay_manager.controller.get_info("bw-event-cache")

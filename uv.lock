@@ -1,6 +1,6 @@
 version = 1
 revision = 3
-requires-python = ">=3.14"
+requires-python = "==3.14.*"
 
 [[package]]
 name = "psutil"
@@ -32,7 +32,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/94/c6/b2258155546f96674
 
 [[package]]
 name = "tamagonion"
-version = "0.1.0"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "psutil" },
@@ -41,6 +41,6 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "psutil", specifier = ">=7.2.2" },
-    { name = "stem", specifier = ">=1.8.2" },
+    { name = "psutil", specifier = "==7.2.2" },
+    { name = "stem", specifier = "==1.8.2" },
 ]
