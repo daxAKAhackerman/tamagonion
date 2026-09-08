@@ -49,8 +49,6 @@ class Paper:
             self.pen.draw(art.blackout[self.app_data.frame], 9, 0)
         elif not self.app_data.info["has_enough_dir_info"]:
             self.pen.draw(art.confused[self.app_data.frame], 10 + self.app_data.frame, 0)
-        elif not self.app_data.info["can_establish_circuits"]:
-            self.pen.draw(art.sad[self.app_data.frame], 10 + self.app_data.frame, 0)
 
         # Relay network statuses
         elif not self.app_data.info["reachability"]:

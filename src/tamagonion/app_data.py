@@ -114,7 +114,6 @@ class AppData:
             "bw_avg_up": int(traffic_written) / self.uptime,
             "network_liveness": self.relay_manager.controller.get_info("network-liveness") == "up",
             "bootstrap_percent": int(self.relay_manager.controller.get_info("status/bootstrap-phase").split(" ")[2].split("=")[-1]),
-            "can_establish_circuits": self.relay_manager.controller.get_info("status/circuit-established") == "1",
             "has_enough_dir_info": self.relay_manager.controller.get_info("status/enough-dir-info") == "1",
             "good_server_descriptor": self.relay_manager.controller.get_info("status/good-server-descriptor") == "1",
             "reachability": self.relay_manager.controller.get_info("status/reachability-succeeded/or") == "1",
