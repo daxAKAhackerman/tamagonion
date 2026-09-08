@@ -55,7 +55,7 @@ class Paper:
         elif not self.app_data.info["reachability"]:
             Pen.draw(art.stinky_turned_around[self.app_data.frame], 10, 0)
         elif not self.app_data.info["good_server_descriptor"]:
-            Pen.draw(art.stinky_embarassed[self.app_data.frame], 10, 0)
+            Pen.draw(art.stinky_embarrassed[self.app_data.frame], 10, 0)
 
         # Relay statuses
         elif Flags.NO_ED_CONSENSUS in self.app_data.flags or {Flags.VALID, Flags.RUNNING} - set(self.app_data.flags):

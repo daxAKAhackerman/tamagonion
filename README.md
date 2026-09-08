@@ -2,7 +2,7 @@
 
 ## Instructions
 
-This is Stinky, it's a Tamagonion and it's running your Tor relay. Tamagonions are cyber creatures that have bravely stepped out of the Tor network to learn what life is like in the clearnet and to help you monitor your relay. It mostly loafs around and browses the Web anonymously, but it's more entertaining to look at than a graph!
+This is Stinky, it's a Tamagonion and it's running your Tor relay. Tamagonions are cyber creatures that have bravely stepped out of the Tor network to learn what life is like in the clearnet and to help you monitor your relay. It mostly loafs around and browses the Web anonymously, but it's more entertaining than looking at a graph!
 
 ```
              ▌▌
@@ -21,18 +21,21 @@ This is Stinky, it's a Tamagonion and it's running your Tor relay. Tamagonions a
 To activate the viewport, use the `tamagonion` command as such:
 
 ```bash
+# Install tamagonion
+$ pip install tamagonion
+
 # By default, we will try to connect to the control port at 127.0.0.1:9051
-$ uv run tamagonion
+$ tamagonion
 
 # If you use password authentication, you can supply it with -P or with the TAMAGONION_PASSWORD environment variable
-$ uv run tamagonion -P my_password
-$ TAMAGONION_PASSWORD=my_password uv run tamagonion
+$ tamagonion -P my_password
+$ TAMAGONION_PASSWORD=my_password tamagonion
 
 # If the port is listening somewhere else, you can specify it with -i and -p
-$ uv run tamagonion -i 192.168.0.10 -p 9999
+$ tamagonion -i 192.168.0.10 -p 9999
 
 # If you are connecting using a Unix socket, you can point to it with -s
-$ uv run tamagonion -s /var/run/tor/control
+$ tamagonion -s /var/run/tor/control
 ```
 
 ## Status check
@@ -41,11 +44,11 @@ $ uv run tamagonion -s /var/run/tor/control
 ┌──────────────────────────────────────────────┐
 │Relay nickname: exitafpwrwmm                  │
 │Uptime: 0d 05h 53m 06s                        │
-│Connections (N/L/Co/F/Cl): 0,0,7,0,0          │
+│Connections (N/L/Co/F/Cl): 0/0/7/0/0          │
 │Download (Cur/Avg/Tot): 338B / 116B / 2MB     │
 │Upload (Cur/Avg/Tot): 1KB / 152B / 3MB        │
 │Version: 0.4.9.11 (none recommended)          │
-│Process info (CPU/Mem): 0.0%/867MB            │
+│Process info (CPU/Mem): 0.0% / 867MB          │
 │                              ░░░░░░░░        │
 │                             ░╔══════╗░   █▄  │
 │             ▌▌          z   ░║ EXIT ║░ █████ │
@@ -76,14 +79,14 @@ The top of the viewport contains various information about your relay. More spec
 
 ## Biology
 
-Tamagonions are very atuned to a relay's operation. You can know how your relay is going by looking at how Stinky is feeling or behaving.
+Tamagonions are very attuned to a relay's operation. You can know how your relay is going by looking at how Stinky is feeling or behaving.
 
-| Behavior     | Meaning                                                                                                                   |
+| Behaviour    | Meaning                                                                                                                   |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------- |
 | Asleep       | The relay is "dormant", meaning it has gone idle due to lack of use or some similar reason.                               |
 | Sad          | The relay doesn't have the both the "Valid" and the "Running" flags, or it has the "NoEdConsensus" flag.                  |
 | Confused     | The relay discarded expired statuses and server descriptors to fall below the desired threshold of directory information. |
-| Embarassed   | A directory authority rejected our descriptor.                                                                            |
+| Embarrassed  | A directory authority rejected our descriptor.                                                                            |
 | Looking away | The relay's ORPort is unreachable.                                                                                        |
 | Bored        | The relay has the "MiddleOnly" flag.                                                                                      |
 | Glitchy      | The relay doesn't have the "Stable" flag.                                                                                 |
@@ -93,7 +96,7 @@ Tamagonions are very atuned to a relay's operation. You can know how your relay 
 
 ## Room status check
 
-Stinky's room can get a bit crowded with things it collected along the way. But every thing it collects means something special to it.
+Stinky's room can get a bit crowded with things it collected along the way. But everything it collects means something special to it.
 
 | Object or room state | Meaning                                        |
 | -------------------- | ---------------------------------------------- |

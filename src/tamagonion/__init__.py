@@ -29,8 +29,8 @@ def main() -> None:
 
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog="Tamagonion",
-        description="This is Stinky, he's running your Tor relay. He mostly loafs around and browses the Web anonymously, but he's more entertaining to look at than a graph!",
+        prog="tamagonion",
+        description="This is Stinky, it's a Tamagonion and it's running your Tor relay.",
         epilog="Hack the planet!",
     )
 

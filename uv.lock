@@ -32,7 +32,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/94/c6/b2258155546f96674
 
 [[package]]
 name = "tamagonion"
-version = "0.0.0"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "psutil" },

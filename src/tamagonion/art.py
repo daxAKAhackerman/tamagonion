@@ -126,7 +126,7 @@ stinky_confused = [
 │      █▄▄▄▄▄▄▄▄▄▄▄▄▄▄█    """,
 ]
 
-stinky_embarassed = [
+stinky_embarrassed = [
     """│             ▌▌
 │             ▓▓▀
 │         ▄▄▄▀▀▀▀▄▄▄

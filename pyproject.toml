@@ -1,7 +1,7 @@
 [project]
 name = "tamagonion"
-version = "0.0.0"
-description = "This is Stinky, he's running your Tor relay. He mostly loafs around and browses the Web anonymously, but he's more entertaining to look at than a graph!"
+version = "1.0.0"
+description = "This is Stinky, it's a Tamagonion and it's running your Tor relay."
 readme = "README.md"
 authors = [
     { name = "Samuel De Grace", email = "48831884+daxAKAhackerman@users.noreply.github.com" }
@@ -16,5 +16,5 @@ dependencies = [
 tamagonion = "tamagonion:main"
 
 [build-system]
-requires = ["uv_build==0.12.3"]
+requires = ["uv_build>=0.12.3,<0.13.0"]
 build-backend = "uv_build"
