@@ -2,6 +2,7 @@ import argparse
 import sys
 from time import sleep
 
+from tamagonion import art
 from tamagonion.app_data import AppData
 from tamagonion.draw import Paper, Pen
 from tamagonion.relay_manager import RelayManager
@@ -16,6 +17,7 @@ def main() -> None:
 
     paper.erase(include_frame=True)
     Pen.hide_cursor().move_home()
+    Pen.draw(art.frame, 0, 0)
 
     try:
         while True:
