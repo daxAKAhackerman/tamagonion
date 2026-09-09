@@ -5,19 +5,72 @@ from tamagonion.app_data import AppData, Flags
 
 
 class Pen:
-    @staticmethod
-    def draw(image: str, pos_y: int, pos_x: int, transparent: bool = False) -> None:
+    @classmethod
+    def draw(cls, image: str, pos_y: int, pos_x: int, transparent: bool = False) -> None:
         if transparent:
             image.replace(" ", "\033C")
-        move_x = f"\033[{pos_x}C" if pos_x > 0 else ""
-        move_y = f"\033[{pos_y}B" if pos_y > 0 else ""
 
-        print("\033[s", end="")
-        print(f"{move_x}{move_y}", end="")
+        cls.move_home().move_down(pos_y).move_right(pos_x)
         for line in image.split("\n"):
             print(line, end="")
-            print(f"\r{move_x}\033[B", end="")
-        print("\033[u", end="")
+            cls.move_to_beginning_of_line().move_right(pos_x).move_down()
+
+    @classmethod
+    def hide_cursor(cls) -> type[Self]:
+        print("\033[?25l", end="")
+        return cls
+
+    @classmethod
+    def show_cursor(cls) -> type[Self]:
+        print("\033[?25h", end="")
+        return cls
+
+    @classmethod
+    def move_home(cls) -> type[Self]:
+        print("\033[H", end="")
+        return cls
+
+    @classmethod
+    def move_to_beginning_of_line(cls) -> type[Self]:
+        print("\r", end="")
+        return cls
+
+    @classmethod
+    def move_up(cls, n: int = 1) -> type[Self]:
+        if n > 0:
+            print(f"\033[{n}A", end="")
+        return cls
+
+    @classmethod
+    def move_down(cls, n: int = 1) -> type[Self]:
+        if n > 0:
+            print(f"\033[{n}B", end="")
+        return cls
+
+    @classmethod
+    def move_right(cls, n: int = 1) -> type[Self]:
+        if n > 0:
+            print(f"\033[{n}C", end="")
+        return cls
+
+    @classmethod
+    def move_left(cls, n: int = 1) -> type[Self]:
+        if n > 0:
+            print(f"\033[{n}D", end="")
+        return cls
+
+    @classmethod
+    def erase(cls, include_frame: bool = False) -> type[Self]:
+        if include_frame:
+            print("\033[2J", end="")
+        else:
+            split_frame = art.frame.split("\n")
+            frame_height = len(split_frame)
+            frame_witdh = len(split_frame[0])
+            for i in range(1, frame_height - 1):
+                Pen.draw(" " * (frame_witdh - 2), i, 1)
+
+        return cls
 
 
 class Paper:
@@ -34,16 +87,13 @@ class Paper:
         return cls.instance
 
     def draw(self) -> None:
-        self.erase()
-
-        ## Draw the frame
-        Pen.draw(art.frame, 0, 0)
+        Pen.erase()
 
         ## Draw Stinky
 
         # Bootstrap statuses
         if self.app_data.info["bootstrap_percent"] < 100:
-            Pen.draw(art.stinky_egg, 10, 0)
+            Pen.draw(art.stinky_egg[self.app_data.frame], 10, 0)
 
         # Network statuses
         elif not self.app_data.info["network_liveness"]:
@@ -121,20 +171,3 @@ class Paper:
             1,
         )
         Pen.draw(f"Version: {self.app_data.version} ({self.app_data.version_status})", 6, 1)
-
-        if self.app_data.relay_manager.is_local:
-            Pen.draw(
-                f"Process info (CPU/Mem): {self.app_data.process_info['cpu']}% / {AppData.format_bytes(self.app_data.process_info['memory'])}",
-                7,
-                1,
-            )
-
-    def erase(self, include_frame: bool = False) -> None:
-        if include_frame:
-            print("\033[0J", end="")
-        else:
-            split_frame = art.frame.split("\n")
-            frame_height = len(split_frame)
-            frame_witdh = len(split_frame[0])
-            for i in range(1, frame_height - 1):
-                Pen.draw(" " * (frame_witdh - 2), i, 1)

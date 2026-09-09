@@ -8,7 +8,6 @@ authors = [
 ]
 requires-python = "==3.14.*"
 dependencies = [
-    "psutil==7.2.2",
     "stem==1.8.2",
 ]
 

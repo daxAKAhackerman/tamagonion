@@ -2,7 +2,6 @@ from collections import defaultdict
 from enum import StrEnum
 from typing import Any, Self
 
-import psutil
 from stem import DescriptorUnavailable
 from stem.version import Version
 
@@ -33,10 +32,8 @@ class AppData:
     flags: list[str]
     version: Version
     info: dict[str, Any]
-    process_info: dict[str, Any]
     uptime: float = 0.0
     connection_status_map: defaultdict[str, int]
-    pid: int = 0
     version_status: str = ""
     relay_name: str = ""
     frame: int = 0
@@ -44,7 +41,6 @@ class AppData:
     instance: Self | None = None
 
     def __init(self, relay_manager: RelayManager) -> None:
-        self.process_info = {}
         self.info = {}
         self.version = Version("0.0.0.0")
         self.flags = []
@@ -53,7 +49,6 @@ class AppData:
         self.relay_manager = relay_manager
         self._get_version()
         self._get_version_status()
-        self._get_pid()
         self._get_relay_name()
 
     def __new__(cls, *args, **kwargs) -> Self:
@@ -67,9 +62,6 @@ class AppData:
         self._get_uptime()
         self._get_info()
         self._get_orconn_status()
-
-        if self.relay_manager.is_local:
-            self._get_process_info()
 
     def _get_flags(self) -> None:
         try:
@@ -89,9 +81,6 @@ class AppData:
         seconds = uptime_as_int % SECONDS_IN_MINUTE
 
         return f"{days}d {hours:02}h {minutes:02}m {seconds:02}s"
-
-    def _get_pid(self) -> None:
-        self.pid = self.relay_manager.controller.get_pid()
 
     def _get_version(self) -> None:
         self.version = self.relay_manager.controller.get_version()
@@ -131,14 +120,6 @@ class AppData:
         for status in orconn_status.split("\n"):
             _node, state = status.split(" ")
             self.connection_status_map[state] += 1
-
-    def _get_process_info(self) -> None:
-        process = psutil.Process(self.pid)
-
-        self.process_info = {
-            "cpu": process.cpu_percent(),
-            "memory": process.memory_info().rss,
-        }
 
     @staticmethod
     def format_bytes(b: int) -> str:

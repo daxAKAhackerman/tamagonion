@@ -4,6 +4,8 @@
 
 This is Stinky, it's a Tamagonion and it's running your Tor relay. Tamagonions are cyber creatures that have bravely stepped out of the Tor network to learn what life is like in the clearnet and to help you monitor your relay. It mostly loafs around and browses the Web anonymously, but it's more entertaining than looking at a graph!
 
+More seriously, this program is meant to help you monitor your Tor relay in a more fun way. Start Tamagonion and just let it do its thing in the corner of your desktop or in a tmux split to get a general idea of the state of your relay. It is built to have minimal dependencies, only relying on [Stem](https://stem.torproject.org/).
+
 ```
              ▌▌
              ▓▓▀
@@ -22,6 +24,7 @@ To activate the viewport, use the `tamagonion` command as such:
 
 ```bash
 # Install tamagonion
+# If you'd rather run it directly from this repository, you can use `uv run tamagonion` instead
 $ pip install tamagonion
 
 # By default, we will try to connect to the control port at 127.0.0.1:9051
@@ -48,7 +51,7 @@ $ tamagonion -s /var/run/tor/control
 │Download (Cur/Avg/Tot): 338B / 116B / 2MB     │
 │Upload (Cur/Avg/Tot): 1KB / 152B / 3MB        │
 │Version: 0.4.9.11 (none recommended)          │
-│Process info (CPU/Mem): 0.0% / 867MB          │
+│                                              │
 │                              ░░░░░░░░        │
 │                             ░╔══════╗░   █▄  │
 │             ▌▌          z   ░║ EXIT ║░ █████ │
@@ -75,7 +78,6 @@ The top of the viewport contains various information about your relay. More spec
   - CLOSED: The OR connection closed in an unremarkable way.
 - The current, average and total amount of data that was downloaded and uploaded
 - The version of the Tor binary, as well as the recommendation from the consensus (if any)
-- If you are connected locally (localhost or Unix socket), the CPU and memory usage of the Tor daemon
 
 ## Biology
 
