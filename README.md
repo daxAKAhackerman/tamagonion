@@ -111,7 +111,7 @@ Stinky's room can get a bit crowded with things it collected along the way. But 
 
 ## Adjusting the viewport
 
-Here are a few example of how you could typically launch Tamagonion:
+Here are a few examples of how you could typically launch Tamagonion:
 
 ```bash
 # If you are using Kitty, you can start a new terminal running only tamagonion with the correct dimensions
