@@ -59,6 +59,19 @@ class Pen:
             print(f"\033[{n}D", end="")
         return cls
 
+    @classmethod
+    def erase(cls, include_frame: bool = False) -> type[Self]:
+        if include_frame:
+            print("\033[2J", end="")
+        else:
+            split_frame = art.frame.split("\n")
+            frame_height = len(split_frame)
+            frame_witdh = len(split_frame[0])
+            for i in range(1, frame_height - 1):
+                Pen.draw(" " * (frame_witdh - 2), i, 1)
+
+        return cls
+
 
 class Paper:
     app_data: AppData
@@ -74,10 +87,7 @@ class Paper:
         return cls.instance
 
     def draw(self) -> None:
-        self.erase()
-
-        ## Draw the frame
-        Pen.draw(art.frame, 0, 0)
+        Pen.erase()
 
         ## Draw Stinky
 
@@ -161,13 +171,3 @@ class Paper:
             1,
         )
         Pen.draw(f"Version: {self.app_data.version} ({self.app_data.version_status})", 6, 1)
-
-    def erase(self, include_frame: bool = False) -> None:
-        if include_frame:
-            print("\033[2J", end="")
-        else:
-            split_frame = art.frame.split("\n")
-            frame_height = len(split_frame)
-            frame_witdh = len(split_frame[0])
-            for i in range(1, frame_height - 1):
-                Pen.draw(" " * (frame_witdh - 2), i, 1)

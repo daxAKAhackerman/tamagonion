@@ -15,7 +15,7 @@ def main() -> None:
     app_data = AppData(relay_manager)
     paper = Paper(app_data)
 
-    paper.erase(include_frame=True)
+    Pen.erase(include_frame=True)
     Pen.hide_cursor().move_home()
     Pen.draw(art.frame, 0, 0)
 
@@ -27,7 +27,7 @@ def main() -> None:
     except KeyboardInterrupt:
         pass
 
-    paper.erase(include_frame=True)
+    Pen.erase(include_frame=True)
     Pen.move_home().show_cursor()
     sys.exit(0)
 
