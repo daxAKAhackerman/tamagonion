@@ -1,6 +1,6 @@
 [project]
 name = "tamagonion"
-version = "1.0.0"
+version = "1.1.0"
 description = "This is Stinky, it's a Tamagonion and it's running your Tor relay."
 readme = "README.md"
 authors = [
