@@ -109,6 +109,21 @@ Stinky's room can get a bit crowded with things it collected along the way. But 
 | Cassette             | The relay has the "V2Dir" flag.                |
 | Shield               | The relay has the "Guard" flag.                |
 
+## Adjusting the viewport
+
+Here are a few example of how you could typically launch Tamagonion:
+
+```bash
+# If you are using Kitty, you can start a new terminal running only tamagonion with the correct dimensions
+$ TAMAGONION_PASSWORD=my_password kitty --override remember_window_size=no --override initial_window_width=48c --override initial_window_height=20c tamagonion
+
+# If you are using tmux, you can add a bind as such to create a popup that will quickly show you tamagonion
+echo 'bind-key T display-popup -E -w 50 -h 22 -x R -y S -- env TAMAGONION_PASSWORD=my_password /home/user/.pyenv/shims/tamagonion' >> ~/.tmux.conf
+
+# Or if you want a permanent split
+pane=$(tmux split-window -h -d -l 48 -P -F '#{pane_id}'); tmux split-window -v -d -l 20 -t "$pane" env TAMAGONION_PASSWORD=my_password tamagonion
+```
+
 ## You may also like...
 
 - [Testing Tor Network](https://github.com/daxAKAhackerman/testing-tor-network) - CLI tool to setup a testing TOR network with Docker
