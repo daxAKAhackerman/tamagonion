@@ -21,9 +21,6 @@ class RelayManager:
         else:
             self.controller.authenticate()
 
-        if socket_file or self.controller.is_localhost():
-            self.is_local = True
-
         self.controller.add_event_listener(lambda: True, EventType["BW"])
 
     def __new__(cls, *args, **kwargs) -> Self:
