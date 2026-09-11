@@ -71,15 +71,15 @@ The top of the viewport contains various information about your relay. More spec
 - The relay nickname as defined in your Tor configuration
 - The uptime since the Tor daemon has started
 - The number of connections
-  - NEW: We have received a new incoming OR connection, and are starting the server-side handshake.
-  - LAUNCHED: We have launched a new outgoing OR connection, and are starting the client-side handshake.
-  - CONNECTED: The OR connection has been connected and the handshake is done.
-  - FAILED: Our attempt to open the OR connection failed.
-  - CLOSED: The OR connection closed in an unremarkable way.
+  - NEW: We have received a new incoming OR connection, and are starting the server-side handshake
+  - LAUNCHED: We have launched a new outgoing OR connection, and are starting the client-side handshake
+  - CONNECTED: The OR connection has been connected and the handshake is done
+  - FAILED: Our attempt to open the OR connection failed
+  - CLOSED: The OR connection closed in an unremarkable way
 - The current, average and total amount of data that was downloaded and uploaded
 - The version of the Tor binary
 
-You can always come back home by pressing `H`.
+You can always come back home by pressing `H`, and quit the app using `Q`.
 
 ## Biology
 
