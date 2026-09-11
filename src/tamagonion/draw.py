@@ -1,5 +1,7 @@
-import os
+import select
 import sys
+import termios
+import tty
 from enum import IntEnum, auto
 from typing import Any, Self
 
@@ -103,33 +105,18 @@ class Paper:
         return cls.instance
 
     def setup_scan_key(self) -> None:
-        if os.name != "nt":
-            import termios
-            import tty
-
-            self.saved_fd = sys.stdin.fileno()
-            self.saved_term_setting = termios.tcgetattr(self.saved_fd)
-            tty.setcbreak(self.saved_fd)
+        self.saved_fd = sys.stdin.fileno()
+        self.saved_term_setting = termios.tcgetattr(self.saved_fd)
+        tty.setcbreak(self.saved_fd)
 
     def tear_down_scan_key(self) -> None:
-        if os.name != "nt":
-            import termios
-
-            termios.tcsetattr(self.saved_fd, termios.TCSADRAIN, self.saved_term_setting)
+        termios.tcsetattr(self.saved_fd, termios.TCSADRAIN, self.saved_term_setting)
 
     @staticmethod
     def scan_key() -> str | None:
-        if os.name == "nt":
-            import msvcrt
-
-            if msvcrt.kbhit():
-                return msvcrt.getwch()
-        else:
-            import select
-
-            readable, _writeable, _executable = select.select([sys.stdin], [], [], 0)
-            if readable:
-                return sys.stdin.read(1)
+        readable, _writeable, _executable = select.select([sys.stdin], [], [], 0)
+        if readable:
+            return sys.stdin.read(1)
 
     def draw(self) -> None:
         match self.active_screen:
@@ -178,7 +165,7 @@ class Paper:
         else:
             Pen.draw(art.stinky_base[self.app_data.frame], 10, 7)
 
-        if not info["bootstrap_percent"] < 100 and not info["network_liveness"]:
+        if info["bootstrap_percent"] == 100 and info["network_liveness"]:
             ## Draw the exit sign
 
             if Flags.BAD_EXIT in self.app_data.flags:
