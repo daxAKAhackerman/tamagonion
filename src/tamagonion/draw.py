@@ -247,7 +247,7 @@ class Paper:
 
         if self.app_data.version_status == VersionStatus.RECOMMENDED:
             verion_status = Paper.good_status(self.app_data.version_status)
-        elif self.app_data.version_status in {VersionStatus.OBSOLETE, VersionStatus.UNRECOMMENDED}:
+        elif self.app_data.version_status in {VersionStatus.OBSOLETE, VersionStatus.UNRECOMMENDED, VersionStatus.UNKNOWN}:
             verion_status = Paper.bad_status(self.app_data.version_status)
         else:
             verion_status = Paper.warning_status(self.app_data.version_status)
@@ -263,29 +263,27 @@ class Paper:
         self._draw_flags()
 
     def _draw_flags(self):
-        line_size = 37
-        line_pos_y = 9
-        line_pos_x = 9
         line = ""
         line_len = 0
+        line_pos_y = 9
 
         Pen.draw("Flags: ", 9, 2)
 
         for flag in self.app_data.flags:
-            if line_len + len(flag + ", ") <= line_size:
+            if line_len + len(flag + ", ") <= 37:
                 colored_flag = (
                     Paper.bad_status(flag) if flag in {Flags.BAD_EXIT, Flags.MIDDLE_ONLY, Flags.NO_ED_CONSENSUS, Flags.STALE_DESC} else Paper.good_status(flag)
                 )
                 line += colored_flag + ", "
                 line_len += len(flag + ", ")
             else:
-                Pen.draw(line.rstrip(", "), line_pos_y, line_pos_x)
+                Pen.draw(line.rstrip(", "), line_pos_y, 9)
                 line_pos_y += 1
                 line = ""
                 line_len = 0
 
         if line:
-            Pen.draw(line.rstrip(", "), line_pos_y, line_pos_x)
+            Pen.draw(line.rstrip(", "), line_pos_y, 9)
 
     @staticmethod
     def good_status(s: str) -> str:

@@ -17,11 +17,11 @@ def main() -> None:
 
     Pen.erase(include_frame=True)
     Pen.hide_cursor().move_home()
-    Pen.draw(art.frame, 0, 0)
 
     try:
         paper.setup_scan_key()
         while True:
+            Pen.draw(art.frame, 0, 0)
             app_data.update()
             paper.draw()
 
