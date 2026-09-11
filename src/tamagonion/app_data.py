@@ -27,14 +27,24 @@ class Flags(StrEnum):
     VALID = "Valid"
 
 
+class VersionStatus(StrEnum):
+    RECOMMENDED = "recommended"
+    OBSOLETE = "obsolete"
+    NEW = "new"
+    NEW_IN_SERIES = "new in series"
+    UNRECOMMENDED = "unrecommended"
+    NONE_RECOMMENDED = "none recommended"
+    UNKNOWN = "unknown"
+
+
 class AppData:
     relay_manager: RelayManager
     flags: list[str]
     version: Version
     info: dict[str, Any]
+    version_status: VersionStatus = VersionStatus.UNKNOWN
     uptime: float = 0.0
     connection_status_map: defaultdict[str, int]
-    version_status: str = ""
     relay_name: str = ""
     frame: int = 0
     frame_skip: bool = False
@@ -86,7 +96,7 @@ class AppData:
         self.version = self.relay_manager.controller.get_version()
 
     def _get_version_status(self) -> None:
-        self.version_status = self.relay_manager.controller.get_info("status/version/current")
+        self.version_status = VersionStatus(self.relay_manager.controller.get_info("status/version/current"))
 
     def _get_relay_name(self) -> None:
         nickname = self.relay_manager.controller.get_conf("Nickname")
