@@ -21,8 +21,8 @@ def main() -> None:
     try:
         paper.setup_scan_key()
         while True:
-            Pen.draw(art.frame, 0, 0)
             app_data.update()
+            Pen.draw(art.frame, 0, 0)
             paper.draw()
 
             for _i in range(20):
