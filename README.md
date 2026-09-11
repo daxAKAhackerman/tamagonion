@@ -41,16 +41,16 @@ $ tamagonion -i 192.168.0.10 -p 9999
 $ tamagonion -s /var/run/tor/control
 ```
 
-## Status check
+## Home screen
 
 ```
 ┌──────────────────────────────────────────────┐
-│Relay nickname: exitafpwrwmm                  │
-│Uptime: 0d 05h 53m 06s                        │
-│Connections (N/L/Co/F/Cl): 0/0/7/0/0          │
-│Download (Cur/Avg/Tot): 338B / 116B / 2MB     │
-│Upload (Cur/Avg/Tot): 1KB / 152B / 3MB        │
-│Version: 0.4.9.11 (none recommended)          │
+│Relay nickname: exitigefkebk                  │
+│Uptime: 0d 06h 08m 09s                        │
+│Connections (N/L/Co/F/Cl): 0/0/6/0/0          │
+│Download (Cur/Avg/Tot): 338B / 97B / 2MB      │
+│Upload (Cur/Avg/Tot): 1KB / 92B / 2MB         │
+│Version: 0.4.9.11                             │
 │                                              │
 │                              ░░░░░░░░        │
 │                             ░╔══════╗░   █▄  │
@@ -63,7 +63,7 @@ $ tamagonion -s /var/run/tor/control
 │ ____ █      ∙     █  █  █   ║---│---║╧╤══╧╤  │
 ││oV2o│█             ▀▀▀▀▀    ║---│---║╒╧══╤╧  │
 │╘════╛ █▄▄▄▄▄▄▄▄▄▄▄▄█        ╙───┴───╜╘═══╧   │
-└───────────────────────────Hit ctrl+c to exit─┘
+└───────────────────────|Home│Status│Hints│Quit┘
 ```
 
 The top of the viewport contains various information about your relay. More specifically:
@@ -71,13 +71,15 @@ The top of the viewport contains various information about your relay. More spec
 - The relay nickname as defined in your Tor configuration
 - The uptime since the Tor daemon has started
 - The number of connections
-  - NEW: We have received a new incoming OR connection, and are starting the server-side handshake.
-  - LAUNCHED: We have launched a new outgoing OR connection, and are starting the client-side handshake.
-  - CONNECTED: The OR connection has been connected and the handshake is done.
-  - FAILED: Our attempt to open the OR connection failed.
-  - CLOSED: The OR connection closed in an unremarkable way.
+  - NEW: We have received a new incoming OR connection, and are starting the server-side handshake
+  - LAUNCHED: We have launched a new outgoing OR connection, and are starting the client-side handshake
+  - CONNECTED: The OR connection has been connected and the handshake is done
+  - FAILED: Our attempt to open the OR connection failed
+  - CLOSED: The OR connection closed in an unremarkable way
 - The current, average and total amount of data that was downloaded and uploaded
-- The version of the Tor binary, as well as the recommendation from the consensus (if any)
+- The version of the Tor binary
+
+You can always come back home by pressing `H`, and quit the app using `Q`.
 
 ## Biology
 
@@ -95,6 +97,7 @@ Tamagonions are very attuned to a relay's operation. You can know how your relay
 | Old          | The relay has the "StaleDesc" flag.                                                                                       |
 | Egg          | The relay is bootstrapping.                                                                                               |
 | Slow         | The relay doesn't have the "Fast" flag.                                                                                   |
+| Hurt         | The Tor binary version is either obsolete, unrecommended or unknown.                                                      |
 
 ## Room status check
 
@@ -108,6 +111,33 @@ Stinky's room can get a bit crowded with things it collected along the way. But 
 | Books                | The relay has the "HSDir" flag.                |
 | Cassette             | The relay has the "V2Dir" flag.                |
 | Shield               | The relay has the "Guard" flag.                |
+
+## Status check
+
+To get an explanation of Stinky's state, press `S` and you will be shown details about the reason behind its behaviour.
+
+```
+┌──────────────────────────────────────────────┐
+│┌Status──────────────────────────────────────┐│
+││Dormant: Yes                                ││
+││Network liveness: Live                      ││
+││Bootstrap progress: 100%                    ││
+││Enough directory info: Yes                  ││
+││Good server descriptor: Yes                 ││
+││Reachability: Reachable                     ││
+││Version status: none recommended            ││
+││Flags: Exit, Fast, Guard, HSDir, Running    ││
+││       V2Dir, Valid                         ││
+││                                            ││
+││                                            ││
+││                                            ││
+││                                            ││
+││                                            ││
+││                                            ││
+││                                            ││
+│└────────────────────────────────────────────┘│
+└───────────────────────|Home│Status│Hints│Quit┘
+```
 
 ## Adjusting the viewport
 
