@@ -5,6 +5,7 @@ BOLD_UNDERLINE = f"{BOLD}{UNDERLINE}"
 RED = "\033[31m"
 GREEN = "\033[32m"
 YELLOW = "\033[33m"
+DIM = "\033[2m"
 
 frame = f"""┌──────────────────────────────────────────────┐
 │                                              │
