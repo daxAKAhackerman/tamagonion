@@ -87,7 +87,6 @@ Tamagonions are very attuned to a relay's operation. You can know how your relay
 
 | Behaviour    | Meaning                                                                                                                   |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------- |
-| Asleep       | The relay is "dormant", meaning it has gone idle due to lack of use or some similar reason.                               |
 | Sad          | The relay doesn't have the both the "Valid" and the "Running" flags, or it has the "NoEdConsensus" flag.                  |
 | Confused     | The relay discarded expired statuses and server descriptors to fall below the desired threshold of directory information. |
 | Embarrassed  | A directory authority rejected our descriptor.                                                                            |
@@ -98,6 +97,7 @@ Tamagonions are very attuned to a relay's operation. You can know how your relay
 | Egg          | The relay is bootstrapping.                                                                                               |
 | Slow         | The relay doesn't have the "Fast" flag.                                                                                   |
 | Hurt         | The Tor binary version is either obsolete, unrecommended or unknown.                                                      |
+| Asleep       | This just means that it's bed time for Stinky. What, you expected it to never sleep?                                      |
 
 ## Room status check
 

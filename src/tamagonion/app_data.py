@@ -109,7 +109,6 @@ class AppData:
         traffic_written = self.relay_manager.controller.get_info("traffic/written")
 
         self.info = {
-            "dormant": self.relay_manager.controller.get_info("dormant") != "0",
             "traffic_read": int(traffic_read),
             "traffic_written": int(traffic_written),
             "bw_event_cache_down": int(bw_event_latest[0]),

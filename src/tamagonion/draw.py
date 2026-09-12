@@ -1,7 +1,9 @@
 import select
 import sys
 import termios
+import textwrap
 import tty
+from datetime import datetime
 from enum import IntEnum, auto
 from typing import Any, Self
 
@@ -125,7 +127,7 @@ class Paper:
             case Screen.STATUS:
                 self.draw_status()
             case Screen.HINT:
-                pass
+                self.draw_hints()
 
     def draw_home(self) -> None:
         Pen.erase()
@@ -160,10 +162,11 @@ class Paper:
             Pen.draw(art.stinky_unstable[self.app_data.frame], 10, 7)
         elif Flags.MIDDLE_ONLY in self.app_data.flags:
             Pen.draw(art.stinky_bored[self.app_data.frame], 10, 7)
-        elif info["dormant"]:
-            Pen.draw(art.stinky_asleep[self.app_data.frame], 10, 7)
         else:
-            Pen.draw(art.stinky_base[self.app_data.frame], 10, 7)
+            if datetime.now().astimezone().hour in {0, 1, 2, 3, 4, 5, 6, 7, 22, 23}:
+                Pen.draw(art.stinky_asleep[self.app_data.frame], 10, 7)
+            else:
+                Pen.draw(art.stinky_base[self.app_data.frame], 10, 7)
 
         if info["bootstrap_percent"] == 100 and info["network_liveness"]:
             ## Draw the exit sign
@@ -223,7 +226,6 @@ class Paper:
 
         info = self.app_data.info
 
-        dormant = Paper.bad_status("Yes") if info["dormant"] else Paper.good_status("No")
         network_liveness = Paper.good_status("Live") if info["network_liveness"] else Paper.bad_status("Down")
         bootstrap_progress = (
             Paper.good_status(f"{info['bootstrap_percent']}%") if info["bootstrap_percent"] == 100 else Paper.bad_status(f"{info['bootstrap_percent']}%")
@@ -239,7 +241,6 @@ class Paper:
         else:
             verion_status = Paper.warning_status(self.app_data.version_status)
 
-        Pen.draw(f"Dormant: {dormant}", 2, 2)
         Pen.draw(f"Network liveness: {network_liveness}", 3, 2)
         Pen.draw(f"Bootstrap progress: {bootstrap_progress}", 4, 2)
         Pen.draw(f"Enough directory info: {enough_dir_info}", 5, 2)
@@ -252,9 +253,9 @@ class Paper:
     def _draw_flags(self):
         line = ""
         line_len = 0
-        line_pos_y = 9
+        line_pos_y = 10
 
-        Pen.draw("Flags: ", 9, 2)
+        Pen.draw("Flags: ", line_pos_y, 2)
 
         for flag in self.app_data.flags:
             if line_len + len(flag + ", ") <= 37:
@@ -272,6 +273,89 @@ class Paper:
         if line:
             Pen.draw(line.rstrip(", "), line_pos_y, 9)
 
+    def draw_hints(self):
+        Pen.draw(art.hints_frame, 1, 1)
+        info = self.app_data.info
+
+        hints = ""
+
+        # Bootstrap statuses
+        if info["bootstrap_percent"] < 100:
+            hints += Paper.wrap_hint(
+                "Bootstrap incomplete",
+                "Your relay is not done bootstrapping. Wait a few minutes, and if it is still incomplete, check your logs for any warnings or errors.",
+            )
+
+        # Network statuses
+        if not info["network_liveness"]:
+            hints += Paper.wrap_hint(
+                "Network down",
+                "Tor has not observed any network activity for the past few seconds. Is your network down? If not, check your logs for any warnings or errors.",
+            )
+        if not info["has_enough_dir_info"]:
+            hints += Paper.wrap_hint(
+                "Not enough directory information",
+                "Our directory information is no longer up-to-date enough to build circuits. Is your network down? If not, check your logs for any warnings or errors.",
+            )
+
+        # Relay network statuses
+        if not info["reachability"]:
+            hints += Paper.wrap_hint(
+                "ORPort or DirPort unreachable",
+                "The Tor network is not able to reach your configured ORPort or DirPort. Have you open the correct ports to the internet? Is your network down?",
+            )
+        if not info["good_server_descriptor"]:
+            hints += Paper.wrap_hint(
+                "Server descriptor denied",
+                "The directories have not accepted our server descriptors. Have you tampered with descriptor information? If not, check your logs for any warnings or errors.",
+            )
+
+        # Relay statuses
+        if Flags.NO_ED_CONSENSUS in self.app_data.flags:
+            hints += Paper.wrap_hint(
+                "NoEdConsensus flag",
+                "Any Ed25519 key in the router’s descriptor or microdescriptor does not reflect authority consensus. Have you tampered with descriptor information? If not, check your logs for any warnings or errors.",
+            )
+        if Flags.VALID not in self.app_data.flags:
+            hints += Paper.wrap_hint("Missing Valid flag", "Authorities have decided that your relay is not valid. Check your logs for any warnings or errors.")
+        if Flags.RUNNING not in self.app_data.flags:
+            hints += Paper.wrap_hint(
+                "Missing Running flag",
+                "Your relay is not currently usable over all its published ORPorts. Have you open the correct ports to the internet? Is your network down?",
+            )
+        if self.app_data.version_status == VersionStatus.OBSOLETE:
+            hints += Paper.wrap_hint("Tor binary version is obsolete", "Upgrade ASAP.")
+        if self.app_data.version_status == VersionStatus.UNRECOMMENDED:
+            hints += Paper.wrap_hint("Tor binary version is not recommended", "Upgrade NOW.")
+        if self.app_data.version_status == VersionStatus.UNKNOWN:
+            hints += Paper.wrap_hint("Tor binary version is unknown", "Download the official Tor binary NOW.")
+        if Flags.STABLE not in self.app_data.flags:
+            hints += Paper.wrap_hint(
+                "Missing Stable flag",
+                "Your relay has not been up for long enough or its mean time between failure is too low. Is the Tor process occasionally crashing? Is your server rebooting? Is your network stable?",
+            )
+        if Flags.MIDDLE_ONLY in self.app_data.flags:
+            hints += Paper.wrap_hint(
+                "MiddleOnly flag", "Your relay is considered unsuitable for usage other than as a middle relay. Check your logs for any warnings or errors."
+            )
+
+        if Flags.BAD_EXIT in self.app_data.flags:
+            hints += Paper.wrap_hint(
+                "BadExit flag",
+                "Your relay is believed to be useless as an exit node because its ISP censors it, because it is behind a restrictive proxy, or for some similar reason. Take appropriate action.",
+            )
+
+        if Flags.FAST not in self.app_data.flags:
+            hints += Paper.wrap_hint(
+                "Missing Fast flag",
+                "Your relay doesn't have enough bandwidth to build high-bandwidth circuits. Fit a bigger pipe, or accept that your relay will be underused.",
+            )
+
+        if not hints:
+            hints = "Your Tamagonion has a clean bill of health!"
+
+        Pen.draw(hints, 2, 2)
+
     @staticmethod
     def good_status(s: str) -> str:
         return f"{art.GREEN}{s}{art.RESET}"
@@ -283,3 +367,7 @@ class Paper:
     @staticmethod
     def warning_status(s: str) -> str:
         return f"{art.YELLOW}{s}{art.RESET}"
+
+    @staticmethod
+    def wrap_hint(title: str, text: str) -> str:
+        return textwrap.fill(f"{art.BOLD}{title}:{art.RESET}: {text}", 44) + "\n\n"
