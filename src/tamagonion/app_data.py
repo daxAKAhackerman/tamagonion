@@ -11,6 +11,8 @@ SECONDS_IN_MINUTE = 60
 SECONDS_IN_HOUR = SECONDS_IN_MINUTE * 60
 SECONDS_IN_DAY = SECONDS_IN_HOUR * 24
 
+UNKNOWN = "Unknown"
+
 
 class Flags(StrEnum):
     BAD_EXIT = "BadExit"
@@ -42,10 +44,14 @@ class AppData:
     flags: list[str]
     version: Version
     info: dict[str, Any]
+    consensus_info: defaultdict[str, Any]
     version_status: VersionStatus = VersionStatus.UNKNOWN
     uptime: float = 0.0
     connection_status_map: defaultdict[str, int]
-    relay_name: str = ""
+    relay_name: str = UNKNOWN
+    orport: str = UNKNOWN
+    dirport: str = UNKNOWN
+    wait_until_consensus_fetch: int = SECONDS_IN_HOUR
     frame: int = 0
     frame_skip: bool = False
     instance: Self | None = None
@@ -55,11 +61,15 @@ class AppData:
         self.version = Version("0.0.0.0")
         self.flags = []
         self.connection_status_map = defaultdict(lambda: 0)
+        self.consensus_info = defaultdict(lambda: None)
 
         self.relay_manager = relay_manager
         self._get_version()
         self._get_version_status()
         self._get_relay_name()
+        self._get_orport()
+        self._get_dirport()
+        self._get_consensus_info()
 
     def __new__(cls, *args, **kwargs) -> Self:
         if cls.instance is None:
@@ -99,17 +109,22 @@ class AppData:
         self.version_status = VersionStatus(self.relay_manager.controller.get_info("status/version/current"))
 
     def _get_relay_name(self) -> None:
-        nickname = self.relay_manager.controller.get_conf("Nickname")
-        self.relay_name = nickname or "Unknown"
+        self.relay_name = self.relay_manager.controller.get_conf("Nickname") or UNKNOWN
+
+    def _get_orport(self) -> None:
+        self.orport = self.relay_manager.controller.get_conf("ORPort") or UNKNOWN
+
+    def _get_dirport(self) -> None:
+        self.dirport = self.relay_manager.controller.get_conf("DirPort") or UNKNOWN
 
     def _get_info(self) -> None:
         bw_event_cache = self.relay_manager.controller.get_info("bw-event-cache")
         bw_event_latest = bw_event_cache.split(" ")[-1].split(",")
         traffic_read = self.relay_manager.controller.get_info("traffic/read")
         traffic_written = self.relay_manager.controller.get_info("traffic/written")
+        bootstrap_phase = self.relay_manager.controller.get_info("status/bootstrap-phase").split(" ")[-1].split("=", 1)[-1].strip('"')
 
         self.info = {
-            "dormant": self.relay_manager.controller.get_info("dormant") != "0",
             "traffic_read": int(traffic_read),
             "traffic_written": int(traffic_written),
             "bw_event_cache_down": int(bw_event_latest[0]),
@@ -118,6 +133,7 @@ class AppData:
             "bw_avg_up": int(traffic_written) / self.uptime,
             "network_liveness": self.relay_manager.controller.get_info("network-liveness") == "up",
             "bootstrap_percent": int(self.relay_manager.controller.get_info("status/bootstrap-phase").split(" ")[2].split("=")[-1]),
+            "bootstrap_phase": bootstrap_phase,
             "has_enough_dir_info": self.relay_manager.controller.get_info("status/enough-dir-info") == "1",
             "good_server_descriptor": self.relay_manager.controller.get_info("status/good-server-descriptor") == "1",
             "reachability": self.relay_manager.controller.get_info("status/reachability-succeeded/or") == "1",
@@ -130,6 +146,14 @@ class AppData:
         for status in orconn_status.split("\n"):
             _node, state = status.split(" ")
             self.connection_status_map[state] += 1
+
+    def _get_consensus_info(self) -> None:
+        consensus = self.relay_manager.controller.get_info("dir/status-vote/current/consensus-microdesc").splitlines()[:90]
+        for line in consensus:
+            key, value = line.split(" ", 1)
+            if key == "servers-version":
+                self.consensus_info["servers_version"] = value
+                break
 
     @staticmethod
     def format_bytes(b: int) -> str:
