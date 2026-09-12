@@ -45,22 +45,22 @@ $ tamagonion -s /var/run/tor/control
 
 ```
 ┌──────────────────────────────────────────────┐
-│Relay nickname: exitigefkebk                  │
-│Uptime: 0d 06h 08m 09s                        │
-│Connections (N/L/Co/F/Cl): 0/0/6/0/0          │
-│Download (Cur/Avg/Tot): 338B / 97B / 2MB      │
-│Upload (Cur/Avg/Tot): 1KB / 92B / 2MB         │
+│Relay nickname: exitgpjkoely                  │
+│Uptime: 0d 02h 58m 19s                        │
+│Connections (N/L/Co/F/Cl): 0/0/7/0/0          │
+│Download (Cur/Avg/Tot): 353B / 201B / 2MB     │
+│Upload (Cur/Avg/Tot): 1KB / 389B / 4MB        │
 │Version: 0.4.9.11                             │
 │                                              │
 │                              ░░░░░░░░        │
 │                             ░╔══════╗░   █▄  │
-│             ▌▌          z   ░║ EXIT ║░ █████ │
-│             ▓▓▀        Z    ░╚══════╝░   █▀  │
-│         ▄▄▄▀▀▀▀▄▄▄   Z       ░░░░░░░░        │
+│             ▌▌              ░║ EXIT ║░ █████ │
+│             ▓▓▀             ░╚══════╝░   █▀  │
+│         ▄▄▄▀▀▀▀▄▄▄           ░░░░░░░░        │
 │        █   ─  ─    ▄▄▄▄▄                     │
-│       █           █  █  █                    │
-│      █    ──  ── █  ▀█▀  █  ╓───┬───╖╤═══╕   │
-│ ____ █      ∙     █  █  █   ║---│---║╧╤══╧╤  │
+│       █    ▄  ▄   █  █  █                    │
+│      █     ▀  ▀  █  ▀█▀  █  ╓───┬───╖╤═══╕   │
+│ ____ █      ──    █  █  █   ║---│---║╧╤══╧╤  │
 ││oV2o│█             ▀▀▀▀▀    ║---│---║╒╧══╤╧  │
 │╘════╛ █▄▄▄▄▄▄▄▄▄▄▄▄█        ╙───┴───╜╘═══╧   │
 └───────────────────────|Home│Status│Hints│Quit┘
@@ -119,7 +119,6 @@ To get an explanation of Stinky's state, press `S` and you will be shown details
 ```
 ┌──────────────────────────────────────────────┐
 │┌Status──────────────────────────────────────┐│
-││Dormant: Yes                                ││
 ││Network liveness: Live                      ││
 ││Bootstrap progress: 100%                    ││
 ││Enough directory info: Yes                  ││
@@ -135,7 +134,35 @@ To get an explanation of Stinky's state, press `S` and you will be shown details
 ││                                            ││
 ││                                            ││
 ││                                            ││
+││                                            ││
 │└────────────────────────────────────────────┘│
+└───────────────────────|Home│Status│Hints│Quit┘
+```
+
+## Caretaking hints
+
+To get hints on how to address the various states of Stinky, press `I`. Use `U` and `D` to scroll.
+
+```
+┌──────────────────────────────────────────────┐
+│┌Hints───────────────────────────────────────┐│
+││Missing Stable flag: Your relay has         ││
+││not been up for long enough or its mean time││
+││between failure is too low. Is the Tor      ││
+││process occasionally crashing? Is your      ││
+││server rebooting? Is your network stable?   ││
+││                                            ││
+││Missing Fast flag: Your relay               ││
+││doesn't have enough bandwidth to build high-││
+││bandwidth circuits. Fit a bigger pipe, or   ││
+││accept that your relay will be underused.   ││
+││                                            ││
+││                                            ││
+││                                            ││
+││                                            ││
+││                                            ││
+││                                            ││
+│└──────────────────────|Scroll up|Scroll down┘│
 └───────────────────────|Home│Status│Hints│Quit┘
 ```
 

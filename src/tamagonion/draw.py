@@ -326,7 +326,7 @@ class Paper:
         if Flags.NO_ED_CONSENSUS in self.app_data.flags:
             hints += Paper.wrap_hint(
                 "NoEdConsensus flag",
-                "Any Ed25519 key in the router’s descriptor or microdescriptor does not reflect authority consensus. Have you tampered with descriptor information? If not, check your logs for any warnings or errors.",
+                "An Ed25519 key in the router's descriptor or microdescriptor does not reflect authority consensus. Have you tampered with descriptor information? If not, check your logs for any warnings or errors.",
             )
         if Flags.VALID not in self.app_data.flags:
             hints += Paper.wrap_hint("Missing Valid flag", "Authorities have decided that your relay is not valid. Check your logs for any warnings or errors.")
@@ -335,17 +335,14 @@ class Paper:
                 "Missing Running flag",
                 "Your relay is not currently usable over all its published ORPorts. Have you opened the correct ports to the internet? Is your network down?",
             )
-        if self.app_data.version_status in {VersionStatus.OBSOLETE, VersionStatus.UNRECOMMENDED, VersionStatus.UNKNOWN}:
-            if self.app_data.version_status != VersionStatus.OBSOLETE:
-                hints += Paper.wrap_hint("Tor binary version is obsolete", f"Upgrade ASAP. Recommended is {self.app_data.consensus_info['servers_version']}")
-            elif self.app_data.version_status == VersionStatus.UNRECOMMENDED:
-                hints += Paper.wrap_hint(
-                    "Tor binary version is not recommended", f"Upgrade NOW. Recommended is {self.app_data.consensus_info['servers_version']}"
-                )
-            elif self.app_data.version_status == VersionStatus.UNKNOWN:
-                hints += Paper.wrap_hint(
-                    "Tor binary version is unknown", f"Download the official Tor binary NOW. Recommended is {self.app_data.consensus_info['servers_version']}"
-                )
+        if self.app_data.version_status == VersionStatus.OBSOLETE:
+            hints += Paper.wrap_hint("Tor binary version is obsolete", f"Upgrade ASAP. Recommended is {self.app_data.consensus_info['servers_version']}")
+        elif self.app_data.version_status == VersionStatus.UNRECOMMENDED:
+            hints += Paper.wrap_hint("Tor binary version is not recommended", f"Upgrade NOW. Recommended is {self.app_data.consensus_info['servers_version']}")
+        elif self.app_data.version_status == VersionStatus.UNKNOWN:
+            hints += Paper.wrap_hint(
+                "Tor binary version is unknown", f"Download the official Tor binary NOW. Recommended is {self.app_data.consensus_info['servers_version']}"
+            )
         if Flags.STABLE not in self.app_data.flags:
             hints += Paper.wrap_hint(
                 "Missing Stable flag",
