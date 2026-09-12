@@ -371,6 +371,7 @@ class Paper:
         if not hints:
             hints = "Your Tamagonion has a clean bill of health!"
 
+        hints = hints.rstrip()
         hints_lines = hints.split("\n")
         self.hints_scroll_index = max(0, min(self.hints_scroll_index, len(hints_lines) - 1))
         hints_view = "\n".join(hints_lines[0 + self.hints_scroll_index : 16 + self.hints_scroll_index])

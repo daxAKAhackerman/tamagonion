@@ -33,11 +33,14 @@ def main() -> None:
                         case "s":
                             paper.active_screen = Screen.STATUS
                         case "i":
+                            paper.hints_scroll_index = 0
                             paper.active_screen = Screen.HINT
                         case "u":
-                            paper.hints_scroll_index = max(0, paper.hints_scroll_index - 1)
+                            if paper.active_screen == Screen.HINT:
+                                paper.hints_scroll_index = max(0, paper.hints_scroll_index - 1)
                         case "d":
-                            paper.hints_scroll_index += 1
+                            if paper.active_screen == Screen.HINT:
+                                paper.hints_scroll_index += 1
                         case "q":
                             raise StopDrawingException
                     break
