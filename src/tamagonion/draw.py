@@ -4,10 +4,10 @@ import termios
 import textwrap
 import tty
 from datetime import datetime
-from enum import IntEnum, auto
+from enum import Enum, auto
 from typing import Any, Self
 
-from tamagonion import art
+from tamagonion import art, strings
 from tamagonion.app_data import SECONDS_IN_HOUR, UNKNOWN, AppData, Flags, VersionStatus
 
 
@@ -15,7 +15,7 @@ class StopDrawingException(Exception):
     pass
 
 
-class Screen(IntEnum):
+class Screen(Enum):
     HOME = auto()
     STATUS = auto()
     HINT = auto()
@@ -77,25 +77,28 @@ class Pen:
         return cls
 
     @classmethod
-    def erase(cls, include_frame: bool = False) -> type[Self]:
-        if include_frame:
-            print("\033[2J", end="")
-        else:
-            split_frame = art.frame.split("\n")
-            frame_height = len(split_frame)
-            frame_witdh = len(split_frame[0])
-            for i in range(1, frame_height - 1):
-                Pen.draw(" " * (frame_witdh - 2), i, 1)
+    def erase_screen(cls) -> type[Self]:
+        print("\033[2J", end="")
+
+        return cls
+
+    @classmethod
+    def erase_in_frame(cls, frame: str) -> type[Self]:
+        split_frame = frame.split("\n")
+        frame_height = len(split_frame)
+        frame_witdh = len(split_frame[0])
+        for i in range(1, frame_height - 1):
+            Pen.draw(" " * (frame_witdh - 2), i, 1)
 
         return cls
 
 
 class Paper:
     app_data: AppData
+    saved_term_setting: termios._AttrReturn
+    saved_fd: Any
     active_screen: Screen = Screen.HOME
     hints_scroll_index: int = 0
-    saved_term_setting: Any
-    saved_fd: Any
     instance: Self | None = None
 
     def __init(self, app_data: AppData) -> None:
@@ -126,6 +129,7 @@ class Paper:
         if self.app_data.wait_until_consensus_fetch <= 0:
             self.app_data._get_consensus_info()
             self.app_data.wait_until_consensus_fetch = SECONDS_IN_HOUR
+
         match self.active_screen:
             case Screen.HOME:
                 self.draw_home()
@@ -135,10 +139,11 @@ class Paper:
                 self.draw_hints()
 
     def draw_home(self) -> None:
-        Pen.erase()
+        Pen.erase_in_frame(art.home_frame)
+        Pen.draw(art.home_frame, 0, 0)
 
-        info = self.app_data.info
         ## Draw Stinky
+        info = self.app_data.info
 
         # Bootstrap statuses
         if info["bootstrap_percent"] < 100:
@@ -161,7 +166,7 @@ class Paper:
             Pen.draw(art.stinky_sad[self.app_data.frame], 10, 7)
         elif Flags.STALE_DESC in self.app_data.flags:
             Pen.draw(art.stinky_old[self.app_data.frame], 10, 7)
-        elif self.app_data.version_status in {VersionStatus.OBSOLETE, VersionStatus.UNRECOMMENDED, VersionStatus.UNKNOWN}:
+        elif self.app_data.version_status in {VersionStatus.OBSOLETE, VersionStatus.UNRECOMMENDED}:
             Pen.draw(art.stinky_hurt[self.app_data.frame], 10, 7)
         elif Flags.STABLE not in self.app_data.flags:
             Pen.draw(art.stinky_unstable[self.app_data.frame], 10, 7)
@@ -175,29 +180,24 @@ class Paper:
 
         if info["bootstrap_percent"] == 100 and info["network_liveness"]:
             ## Draw the exit sign
-
             if Flags.BAD_EXIT in self.app_data.flags:
                 Pen.draw(art.broken_exit_sign, 9, 31)
             elif Flags.EXIT in self.app_data.flags:
                 Pen.draw(art.exit_sign, 8, 30)
 
             ## Draw the books
-
             if Flags.HS_DIR in self.app_data.flags:
                 Pen.draw(art.book, 15, 30)
 
             ## Draw the cassette
-
             if Flags.V2_DIR in self.app_data.flags:
                 Pen.draw(art.cassette, 16, 1)
 
             ## Draw the shield
-
             if Flags.GUARD in self.app_data.flags and info["reachability"]:
                 Pen.draw(art.shield[self.app_data.frame], 13, 19)
 
         ## Slow down the animation
-
         if Flags.FAST not in self.app_data.flags and self.app_data.frame_skip:
             self.app_data.frame_skip = False
         else:
@@ -205,28 +205,41 @@ class Paper:
             self.app_data.frame_skip = True
 
         ## Draw the stats
-
-        Pen.draw(f"Relay nickname: {self.app_data.relay_name}", 1, 1)
-        Pen.draw(f"Uptime: {self.app_data.formated_uptime}", 2, 1)
+        Pen.draw(strings.STATS_DESCRIPTIONS[strings.Stats.NICKNAME].format(name=self.app_data.relay_name), 1, 1)
+        Pen.draw(strings.STATS_DESCRIPTIONS[strings.Stats.UPTIME].format(uptime=self.app_data.formated_uptime), 2, 1)
         Pen.draw(
-            f"Connections (N/L/Co/F/Cl): {self.app_data.connection_status_map['NEW']}/{self.app_data.connection_status_map['LAUNCHED']}/{self.app_data.connection_status_map['CONNECTED']}/{self.app_data.connection_status_map['FAILED']}/{self.app_data.connection_status_map['CLOSED']}",
+            strings.STATS_DESCRIPTIONS[strings.Stats.CONNECTIONS].format(
+                new=self.app_data.connection_status_map["NEW"],
+                launched=self.app_data.connection_status_map["LAUNCHED"],
+                connected=self.app_data.connection_status_map["CONNECTED"],
+                failed=self.app_data.connection_status_map["FAILED"],
+                closed=self.app_data.connection_status_map["CLOSED"],
+            ),
             3,
             1,
         )
         Pen.draw(
-            f"Download (Cur/Avg/Tot): {AppData.format_bytes(info['bw_event_cache_down'])} / {AppData.format_bytes(info['bw_avg_down'])} / {AppData.format_bytes(info['traffic_read'])}",
+            strings.STATS_DESCRIPTIONS[strings.Stats.DOWNLOAD].format(
+                current=AppData.format_bytes(info["bw_event_cache_down"]),
+                average=AppData.format_bytes(info["bw_avg_down"]),
+                total=AppData.format_bytes(info["traffic_read"]),
+            ),
             4,
             1,
         )
         Pen.draw(
-            f"Upload (Cur/Avg/Tot): {AppData.format_bytes(info['bw_event_cache_up'])} / {AppData.format_bytes(info['bw_avg_up'])} / {AppData.format_bytes(info['traffic_written'])}",
+            strings.STATS_DESCRIPTIONS[strings.Stats.UPLOAD].format(
+                current=AppData.format_bytes(info["bw_event_cache_up"]),
+                average=AppData.format_bytes(info["bw_avg_up"]),
+                total=AppData.format_bytes(info["traffic_written"]),
+            ),
             5,
             1,
         )
+        Pen.draw(strings.STATS_DESCRIPTIONS[strings.Stats.VERSION].format(version=self.app_data.version), 6, 1)
 
-        Pen.draw(f"Version: {self.app_data.version}", 6, 1)
-
-    def draw_status(self):
+    def draw_status(self) -> None:
+        Pen.erase_in_frame(art.status_frame)
         Pen.draw(art.status_frame, 1, 1)
 
         info = self.app_data.info
@@ -240,45 +253,48 @@ class Paper:
         reachability = Paper.good_status("Reachable") if info["reachability"] else Paper.bad_status("Unreachable")
 
         if self.app_data.version_status == VersionStatus.RECOMMENDED:
-            verion_status = Paper.good_status(self.app_data.version_status)
-        elif self.app_data.version_status in {VersionStatus.OBSOLETE, VersionStatus.UNRECOMMENDED, VersionStatus.UNKNOWN}:
-            verion_status = Paper.bad_status(self.app_data.version_status)
+            version_status = Paper.good_status(self.app_data.version_status)
+        elif self.app_data.version_status in {VersionStatus.OBSOLETE, VersionStatus.UNRECOMMENDED}:
+            version_status = Paper.bad_status(self.app_data.version_status)
         else:
-            verion_status = Paper.warning_status(self.app_data.version_status)
+            version_status = Paper.warning_status(self.app_data.version_status)
 
-        Pen.draw(f"Network liveness: {network_liveness}", 2, 2)
-        Pen.draw(f"Bootstrap progress: {bootstrap_progress}", 3, 2)
-        Pen.draw(f"Enough directory info: {enough_dir_info}", 4, 2)
-        Pen.draw(f"Good server descriptor: {good_server_descriptor}", 5, 2)
-        Pen.draw(f"Reachability: {reachability}", 6, 2)
-        Pen.draw(f"Version status: {verion_status}", 7, 2)
+        Pen.draw(strings.STATUSES_DESCRIPTION[strings.Statuses.NETWORK_LIVENESS].format(network_liveness=network_liveness), 2, 2)
+        Pen.draw(strings.STATUSES_DESCRIPTION[strings.Statuses.BOOTSTRAP_PROGRESS].format(bootstrap_progress=bootstrap_progress), 3, 2)
+        Pen.draw(strings.STATUSES_DESCRIPTION[strings.Statuses.ENOUGH_DIR_INFO].format(enough_dir_info=enough_dir_info), 4, 2)
+        Pen.draw(strings.STATUSES_DESCRIPTION[strings.Statuses.GOOD_SERVER_DESCRIPTOR].format(good_server_descriptor=good_server_descriptor), 5, 2)
+        Pen.draw(strings.STATUSES_DESCRIPTION[strings.Statuses.REACHABILITY].format(reachability=reachability), 6, 2)
+        Pen.draw(strings.STATUSES_DESCRIPTION[strings.Statuses.VERSION_STATUS].format(version_status=version_status), 7, 2)
 
         self._draw_flags()
 
-    def _draw_flags(self):
+    def _draw_flags(self) -> None:
         line = ""
         line_len = 0
         line_pos_y = 8
+        max_line_len = 37
 
         Pen.draw("Flags: ", line_pos_y, 2)
 
         for flag in self.app_data.flags:
-            if line_len + len(flag + ", ") <= 37:
-                colored_flag = (
-                    Paper.bad_status(flag) if flag in {Flags.BAD_EXIT, Flags.MIDDLE_ONLY, Flags.NO_ED_CONSENSUS, Flags.STALE_DESC} else Paper.good_status(flag)
-                )
-                line += colored_flag + ", "
-                line_len += len(flag + ", ")
-            else:
+            added_len = len(flag) if flag == self.app_data.flags[-1] else len(flag + ", ")
+            if line_len + added_len > max_line_len:
                 Pen.draw(line.rstrip(", "), line_pos_y, 9)
                 line_pos_y += 1
                 line = ""
                 line_len = 0
 
+            colored_flag = (
+                Paper.bad_status(flag) if flag in {Flags.BAD_EXIT, Flags.MIDDLE_ONLY, Flags.NO_ED_CONSENSUS, Flags.STALE_DESC} else Paper.good_status(flag)
+            )
+            line += colored_flag + ", "
+            line_len += len(flag + ", ")
+
         if line:
             Pen.draw(line.rstrip(", "), line_pos_y, 9)
 
     def draw_hints(self):
+        Pen.erase_in_frame(art.hints_frame)
         Pen.draw(art.hints_frame, 1, 1)
         info = self.app_data.info
 
@@ -287,20 +303,20 @@ class Paper:
         # Bootstrap statuses
         if info["bootstrap_percent"] < 100:
             hints += Paper.wrap_hint(
-                "Bootstrap incomplete",
-                f'Your relay is not done bootstrapping. Wait a few minutes, and if it is still incomplete, check your logs for any warnings or errors. Current bootstrap phase is: "{info["bootstrap_phase"]}" ({info["bootstrap_percent"]}%)',
+                strings.HINTS_TITLES[strings.Hints.BOOTSTRAP],
+                strings.HINTS_DESCRIPTIONS[strings.Hints.BOOTSTRAP].format(phase=info["bootstrap_phase"], percent=info["bootstrap_percent"]),
             )
 
         # Network statuses
         if not info["network_liveness"]:
             hints += Paper.wrap_hint(
-                "Network down",
-                "Tor has not observed any network activity for the past few seconds. Is your network down? If not, check your logs for any warnings or errors.",
+                strings.HINTS_TITLES[strings.Hints.NETWORK_LIVENESS],
+                strings.HINTS_DESCRIPTIONS[strings.Hints.NETWORK_LIVENESS],
             )
         if not info["has_enough_dir_info"]:
             hints += Paper.wrap_hint(
-                "Not enough directory information",
-                "Our directory information is no longer up-to-date enough to build circuits. Is your network down? If not, check your logs for any warnings or errors.",
+                strings.HINTS_TITLES[strings.Hints.ENOUGH_DIR_INFO],
+                strings.HINTS_DESCRIPTIONS[strings.Hints.ENOUGH_DIR_INFO],
             )
 
         # Relay network statuses
@@ -313,60 +329,64 @@ class Paper:
                 ports = f"DirPort ({self.app_data.dirport})"
 
             hints += Paper.wrap_hint(
-                "ORPort or DirPort unreachable",
-                f"The Tor network is not able to reach your configured {ports}. Have you opened the correct ports to the internet? Is your network down?",
+                strings.HINTS_TITLES[strings.Hints.REACHABILITY],
+                strings.HINTS_DESCRIPTIONS[strings.Hints.REACHABILITY].format(ports),
             )
         if not info["good_server_descriptor"]:
             hints += Paper.wrap_hint(
-                "Server descriptors denied",
-                "The directories have not accepted our server descriptors. Have you tampered with descriptor information? If not, check your logs for any warnings or errors.",
+                strings.HINTS_TITLES[strings.Hints.GOOD_SERVER_DESCRIPTOR],
+                strings.HINTS_DESCRIPTIONS[strings.Hints.GOOD_SERVER_DESCRIPTOR],
             )
 
         # Relay statuses
         if Flags.NO_ED_CONSENSUS in self.app_data.flags:
             hints += Paper.wrap_hint(
-                "NoEdConsensus flag",
-                "An Ed25519 key in the router's descriptor or microdescriptor does not reflect authority consensus. Have you tampered with descriptor information? If not, check your logs for any warnings or errors.",
+                strings.HINTS_TITLES[strings.Hints.ED_CONSENSUS_FLAG],
+                strings.HINTS_DESCRIPTIONS[strings.Hints.ED_CONSENSUS_FLAG],
             )
         if Flags.VALID not in self.app_data.flags:
-            hints += Paper.wrap_hint("Missing Valid flag", "Authorities have decided that your relay is not valid. Check your logs for any warnings or errors.")
+            hints += Paper.wrap_hint(
+                strings.HINTS_TITLES[strings.Hints.NO_VALID_FLAG],
+                strings.HINTS_DESCRIPTIONS[strings.Hints.NO_VALID_FLAG],
+            )
         if Flags.RUNNING not in self.app_data.flags:
             hints += Paper.wrap_hint(
-                "Missing Running flag",
-                "Your relay is not currently usable over all its published ORPorts. Have you opened the correct ports to the internet? Is your network down?",
+                strings.HINTS_TITLES[strings.Hints.NO_RUNNING_FLAG],
+                strings.HINTS_DESCRIPTIONS[strings.Hints.NO_RUNNING_FLAG],
             )
         if self.app_data.version_status == VersionStatus.OBSOLETE:
-            hints += Paper.wrap_hint("Tor binary version is obsolete", f"Upgrade ASAP. Recommended is {self.app_data.consensus_info['servers_version']}")
-        elif self.app_data.version_status == VersionStatus.UNRECOMMENDED:
-            hints += Paper.wrap_hint("Tor binary version is not recommended", f"Upgrade NOW. Recommended is {self.app_data.consensus_info['servers_version']}")
-        elif self.app_data.version_status == VersionStatus.UNKNOWN:
             hints += Paper.wrap_hint(
-                "Tor binary version is unknown", f"Download the official Tor binary NOW. Recommended is {self.app_data.consensus_info['servers_version']}"
+                strings.HINTS_TITLES[strings.Hints.VERSION_OBSOLETE],
+                strings.HINTS_DESCRIPTIONS[strings.Hints.VERSION_OBSOLETE].format(version=self.app_data.consensus_info["version"]),
+            )
+        elif self.app_data.version_status == VersionStatus.UNRECOMMENDED:
+            hints += Paper.wrap_hint(
+                strings.HINTS_TITLES[strings.Hints.VERSION_UNRECOMMENDED],
+                strings.HINTS_DESCRIPTIONS[strings.Hints.VERSION_UNRECOMMENDED].format(version=self.app_data.consensus_info["version"]),
             )
         if Flags.STABLE not in self.app_data.flags:
             hints += Paper.wrap_hint(
-                "Missing Stable flag",
-                "Your relay has not been up for long enough or its mean time between failure is too low. Is the Tor process occasionally crashing? Is your server rebooting? Is your network stable?",
+                strings.HINTS_TITLES[strings.Hints.NO_STABLE_FLAG],
+                strings.HINTS_DESCRIPTIONS[strings.Hints.NO_STABLE_FLAG],
             )
         if Flags.MIDDLE_ONLY in self.app_data.flags:
             hints += Paper.wrap_hint(
-                "MiddleOnly flag", "Your relay is considered unsuitable for usage other than as a middle relay. Check your logs for any warnings or errors."
+                strings.HINTS_TITLES[strings.Hints.MIDDLE_ONLY_FLAG],
+                strings.HINTS_DESCRIPTIONS[strings.Hints.MIDDLE_ONLY_FLAG],
             )
-
         if Flags.BAD_EXIT in self.app_data.flags:
             hints += Paper.wrap_hint(
-                "BadExit flag",
-                "Your relay is believed to be useless as an exit node because its ISP censors it, because it is behind a restrictive proxy, or for some similar reason. Take appropriate action.",
+                strings.HINTS_TITLES[strings.Hints.BAD_EXIT_FLAG],
+                strings.HINTS_DESCRIPTIONS[strings.Hints.BAD_EXIT_FLAG],
             )
-
         if Flags.FAST not in self.app_data.flags:
             hints += Paper.wrap_hint(
-                "Missing Fast flag",
-                "Your relay doesn't have enough bandwidth to build high-bandwidth circuits. Fit a bigger pipe, or accept that your relay will be underused.",
+                strings.HINTS_TITLES[strings.Hints.NO_FAST_FLAG],
+                strings.HINTS_DESCRIPTIONS[strings.Hints.NO_FAST_FLAG],
             )
 
         if not hints:
-            hints = "Your Tamagonion has a clean bill of health!"
+            hints = strings.HINTS_DESCRIPTIONS[strings.Hints.OK]
 
         hints = hints.rstrip()
         hints_lines = hints.split("\n")

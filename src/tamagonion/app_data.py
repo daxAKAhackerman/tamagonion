@@ -2,7 +2,7 @@ from collections import defaultdict
 from enum import StrEnum
 from typing import Any, Self
 
-from stem import DescriptorUnavailable
+from stem import DescriptorUnavailable, OperationFailed
 from stem.version import Version
 
 from tamagonion.relay_manager import RelayManager
@@ -148,12 +148,15 @@ class AppData:
             self.connection_status_map[state] += 1
 
     def _get_consensus_info(self) -> None:
-        consensus = self.relay_manager.controller.get_info("dir/status-vote/current/consensus-microdesc").splitlines()[:90]
-        for line in consensus:
-            key, value = line.split(" ", 1)
-            if key == "servers-version":
-                self.consensus_info["servers_version"] = value
-                break
+        try:
+            consensus = self.relay_manager.controller.get_info("dir/status-vote/current/consensus-microdesc").splitlines()[:90]
+            for line in consensus:
+                key, value = line.split(" ", 1)
+                if key == "servers-version":
+                    self.consensus_info["servers_version"] = value
+                    break
+        except OperationFailed, ValueError:
+            pass
 
     @staticmethod
     def format_bytes(b: int) -> str:
