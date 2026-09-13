@@ -2,7 +2,6 @@ import argparse
 import sys
 from time import sleep
 
-from tamagonion import art
 from tamagonion.app_data import AppData
 from tamagonion.draw import Paper, Pen, Screen, StopDrawingException
 from tamagonion.relay_manager import RelayManager
@@ -50,6 +49,7 @@ def main() -> None:
         Pen.erase_screen()
         Pen.move_home().show_cursor()
         paper.tear_down_scan_key()
+        RelayManager.controller.close()
 
     sys.exit(0)
 
@@ -57,7 +57,7 @@ def main() -> None:
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="tamagonion",
-        description="This is Stinky, it's a Tamagonion and it's running your Tor relay.",
+        description="This is Stinky, it's a Tamagonion and it's running your Tor relay",
         epilog="Hack the planet!",
     )
 

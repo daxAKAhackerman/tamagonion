@@ -1,11 +1,12 @@
-RESET = "\033[0m"
-BOLD = "\033[1m"
-UNDERLINE = "\033[4m"
-BOLD_UNDERLINE = f"{BOLD}{UNDERLINE}"
-RED = "\033[31m"
-GREEN = "\033[32m"
-YELLOW = "\033[33m"
-DIM = "\033[2m"
+from enum import StrEnum
+
+
+class Effect(StrEnum):
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
+    DIM = "\033[2m"
+    UNDERLINE = "\033[4m"
+
 
 home_frame = f"""┌──────────────────────────────────────────────┐
 │                                              │
@@ -26,7 +27,7 @@ home_frame = f"""┌────────────────────
 │                                              │
 │                                              │
 │                                              │
-└───────────────────────|{BOLD_UNDERLINE}H{RESET}ome│{BOLD_UNDERLINE}S{RESET}tatus│H{BOLD_UNDERLINE}i{RESET}nts│{BOLD_UNDERLINE}Q{RESET}uit┘"""
+└───────────────────────|{Effect.BOLD}{Effect.UNDERLINE}H{Effect.RESET}ome│{Effect.BOLD}{Effect.UNDERLINE}S{Effect.RESET}tatus│H{Effect.BOLD}{Effect.UNDERLINE}i{Effect.RESET}nts│{Effect.BOLD}{Effect.UNDERLINE}Q{Effect.RESET}uit┘"""
 
 status_frame = """┌Status──────────────────────────────────────┐
 │                                            │

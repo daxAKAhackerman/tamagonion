@@ -15,13 +15,13 @@ class RelayManager:
         else:
             self.controller = Controller.from_port(address=ip_addr, port=int(port))  # type:ignore
         if password:
-            self.controller.authenticate("password")
+            self.controller.authenticate(password)
         elif env_password := os.getenv("TAMAGONION_PASSWORD"):
             self.controller.authenticate(env_password)
         else:
             self.controller.authenticate()
 
-        self.controller.add_event_listener(lambda: True, EventType["BW"])
+        self.controller.add_event_listener(lambda event: None, EventType["BW"])
 
     def __new__(cls, *args, **kwargs) -> Self:
         if cls.instance is None:
