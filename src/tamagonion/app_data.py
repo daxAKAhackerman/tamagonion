@@ -2,7 +2,7 @@ from collections import defaultdict
 from enum import StrEnum
 from typing import Any, Self
 
-from stem import DescriptorUnavailable, OperationFailed
+from stem import DescriptorUnavailable
 from stem.version import Version
 
 from tamagonion import strings
@@ -50,15 +50,14 @@ class AppData:
     relay_manager: RelayManager
     flags: list[str]
     version: Version
+    recommended_version: str
     info: dict[str, Any]
-    consensus_info: defaultdict[str, Any]
     version_status: VersionStatus = VersionStatus.UNKNOWN
     uptime: float = 0.0
     connection_status_map: defaultdict[ORConnStatus, int]
     relay_name: str = strings.MISC_STRINGS[strings.Misc.UNKNOWN]
     orport: str = strings.MISC_STRINGS[strings.Misc.UNKNOWN]
     dirport: str = strings.MISC_STRINGS[strings.Misc.UNKNOWN]
-    wait_until_consensus_fetch: int = SECONDS_IN_HOUR
     frame: int = 0
     frame_skip: bool = False
     instance: Self | None = None
@@ -68,15 +67,14 @@ class AppData:
         self.version = Version(strings.MISC_STRINGS[strings.Misc.HOME_DEFAULT_VERSION])
         self.flags = []
         self.connection_status_map = defaultdict(lambda: 0)
-        self.consensus_info = defaultdict(lambda: None)
 
         self.relay_manager = relay_manager
         self._get_version()
+        self._get_recommended_version()
         self._get_version_status()
         self._get_relay_name()
         self._get_orport()
         self._get_dirport()
-        self._get_consensus_info()
 
     def __new__(cls, *args, **kwargs) -> Self:
         if cls.instance is None:
@@ -114,6 +112,9 @@ class AppData:
 
     def _get_version_status(self) -> None:
         self.version_status = VersionStatus(self.relay_manager.controller.get_info("status/version/current"))
+
+    def _get_recommended_version(self) -> None:
+        self.recommended_version = self.relay_manager.controller.get_info("status/version/recommended") or strings.MISC_STRINGS[strings.Misc.UNKNOWN]
 
     def _get_relay_name(self) -> None:
         self.relay_name = self.relay_manager.controller.get_conf("Nickname") or strings.MISC_STRINGS[strings.Misc.UNKNOWN]
@@ -153,19 +154,6 @@ class AppData:
         for status in orconn_status.splitlines():
             _node, state = status.split(" ")
             self.connection_status_map[ORConnStatus(state)] += 1
-
-    def _get_consensus_info(self) -> None:
-        try:
-            consensus = self.relay_manager.controller.get_info("dir/status-vote/current/consensus-microdesc").splitlines()[
-                :34
-            ]  # Consensus preamble is about 17 lines, grabbing 34 to be sure
-            for line in consensus:
-                key, value = line.split(" ", 1)
-                if key == "servers-version":
-                    self.consensus_info["servers_version"] = value
-                    break
-        except OperationFailed, ValueError:
-            pass
 
     @staticmethod
     def format_bytes(b: int) -> str:

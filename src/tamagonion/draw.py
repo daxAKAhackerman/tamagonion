@@ -8,7 +8,7 @@ from enum import Enum, StrEnum, auto
 from typing import Any, Self
 
 from tamagonion import art, strings
-from tamagonion.app_data import SECONDS_IN_HOUR, AppData, Flag, ORConnStatus, VersionStatus
+from tamagonion.app_data import AppData, Flag, ORConnStatus, VersionStatus
 
 SLEEP_HOURS = {*range(8), *range(22, 24)}
 
@@ -149,11 +149,6 @@ class Paper:
             return sys.stdin.read(1)
 
     def draw(self) -> None:
-        self.app_data.wait_until_consensus_fetch -= 1
-        if self.app_data.wait_until_consensus_fetch <= 0:
-            self.app_data._get_consensus_info()
-            self.app_data.wait_until_consensus_fetch = SECONDS_IN_HOUR
-
         match self.active_screen:
             case Screen.HOME:
                 self.draw_home()
@@ -404,12 +399,12 @@ class Paper:
         if self.app_data.version_status == VersionStatus.OBSOLETE:
             hints += Paper._wrap_hint(
                 strings.HINT_TITLES[strings.Hint.VERSION_OBSOLETE],
-                strings.HINT_DESCRIPTIONS[strings.Hint.VERSION_OBSOLETE].format(version=self.app_data.consensus_info["version"]),
+                strings.HINT_DESCRIPTIONS[strings.Hint.VERSION_OBSOLETE].format(version=self.app_data.recommended_version),
             )
         elif self.app_data.version_status == VersionStatus.UNRECOMMENDED:
             hints += Paper._wrap_hint(
                 strings.HINT_TITLES[strings.Hint.VERSION_UNRECOMMENDED],
-                strings.HINT_DESCRIPTIONS[strings.Hint.VERSION_UNRECOMMENDED].format(version=self.app_data.consensus_info["version"]),
+                strings.HINT_DESCRIPTIONS[strings.Hint.VERSION_UNRECOMMENDED].format(version=self.app_data.recommended_version),
             )
         if Flag.STABLE not in self.app_data.flags:
             hints += Paper._wrap_hint(
@@ -442,7 +437,7 @@ class Paper:
         Pen.draw(hints_view, 2, 2)
 
         up_dim = art.Effect.DIM if self.hints_scroll_index == 0 else ""
-        down_dim = art.Effect.DIM if self.hints_scroll_index == frame_vert_space - 2 else ""
+        down_dim = art.Effect.DIM if self.hints_scroll_index == frame_vert_space - 2 or len(hints_lines) <= frame_vert_space else ""
         Pen.draw(
             strings.MISC_STRINGS[strings.Misc.HINT_MENU].format(up_dim=up_dim, down_dim=down_dim),
             18,

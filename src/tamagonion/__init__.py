@@ -49,7 +49,7 @@ def main() -> None:
         Pen.erase_screen()
         Pen.move_home().show_cursor()
         paper.tear_down_scan_key()
-        RelayManager.controller.close()
+        relay_manager.controller.close()
 
     sys.exit(0)
 
