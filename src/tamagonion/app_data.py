@@ -5,16 +5,15 @@ from typing import Any, Self
 from stem import DescriptorUnavailable
 from stem.version import Version
 
+from tamagonion import strings
 from tamagonion.relay_manager import RelayManager
 
 SECONDS_IN_MINUTE = 60
 SECONDS_IN_HOUR = SECONDS_IN_MINUTE * 60
 SECONDS_IN_DAY = SECONDS_IN_HOUR * 24
 
-UNKNOWN = "Unknown"
 
-
-class Flags(StrEnum):
+class Flag(StrEnum):
     BAD_EXIT = "BadExit"
     EXIT = "Exit"
     FAST = "Fast"
@@ -39,37 +38,43 @@ class VersionStatus(StrEnum):
     UNKNOWN = "unknown"
 
 
+class ORConnStatus(StrEnum):
+    NEW = "NEW"
+    LAUNCHED = "LAUNCHED"
+    CONNECTED = "CONNECTED"
+    FAILED = "FAILED"
+    CLOSED = "CLOSED"
+
+
 class AppData:
     relay_manager: RelayManager
     flags: list[str]
     version: Version
+    recommended_version: str
     info: dict[str, Any]
-    consensus_info: defaultdict[str, Any]
     version_status: VersionStatus = VersionStatus.UNKNOWN
     uptime: float = 0.0
-    connection_status_map: defaultdict[str, int]
-    relay_name: str = UNKNOWN
-    orport: str = UNKNOWN
-    dirport: str = UNKNOWN
-    wait_until_consensus_fetch: int = SECONDS_IN_HOUR
+    connection_status_map: defaultdict[ORConnStatus, int]
+    relay_name: str = strings.MISC_STRINGS[strings.Misc.UNKNOWN]
+    orport: str = strings.MISC_STRINGS[strings.Misc.UNKNOWN]
+    dirport: str = strings.MISC_STRINGS[strings.Misc.UNKNOWN]
     frame: int = 0
     frame_skip: bool = False
     instance: Self | None = None
 
     def __init(self, relay_manager: RelayManager) -> None:
         self.info = {}
-        self.version = Version("0.0.0.0")
+        self.version = Version(strings.MISC_STRINGS[strings.Misc.HOME_DEFAULT_VERSION])
         self.flags = []
         self.connection_status_map = defaultdict(lambda: 0)
-        self.consensus_info = defaultdict(lambda: None)
 
         self.relay_manager = relay_manager
         self._get_version()
+        self._get_recommended_version()
         self._get_version_status()
         self._get_relay_name()
         self._get_orport()
         self._get_dirport()
-        self._get_consensus_info()
 
     def __new__(cls, *args, **kwargs) -> Self:
         if cls.instance is None:
@@ -100,7 +105,7 @@ class AppData:
         minutes = (uptime_as_int % SECONDS_IN_HOUR) // SECONDS_IN_MINUTE
         seconds = uptime_as_int % SECONDS_IN_MINUTE
 
-        return f"{days}d {hours:02}h {minutes:02}m {seconds:02}s"
+        return f"{days}{strings.SUFFIXES[strings.Suffix.DAYS]} {hours:02}{strings.SUFFIXES[strings.Suffix.HOURS]} {minutes:02}{strings.SUFFIXES[strings.Suffix.MINUTES]} {seconds:02}{strings.SUFFIXES[strings.Suffix.SECONDS]}"
 
     def _get_version(self) -> None:
         self.version = self.relay_manager.controller.get_version()
@@ -108,14 +113,17 @@ class AppData:
     def _get_version_status(self) -> None:
         self.version_status = VersionStatus(self.relay_manager.controller.get_info("status/version/current"))
 
+    def _get_recommended_version(self) -> None:
+        self.recommended_version = self.relay_manager.controller.get_info("status/version/recommended") or strings.MISC_STRINGS[strings.Misc.UNKNOWN]
+
     def _get_relay_name(self) -> None:
-        self.relay_name = self.relay_manager.controller.get_conf("Nickname") or UNKNOWN
+        self.relay_name = self.relay_manager.controller.get_conf("Nickname") or strings.MISC_STRINGS[strings.Misc.UNKNOWN]
 
     def _get_orport(self) -> None:
-        self.orport = self.relay_manager.controller.get_conf("ORPort") or UNKNOWN
+        self.orport = self.relay_manager.controller.get_conf("ORPort") or strings.MISC_STRINGS[strings.Misc.UNKNOWN]
 
     def _get_dirport(self) -> None:
-        self.dirport = self.relay_manager.controller.get_conf("DirPort") or UNKNOWN
+        self.dirport = self.relay_manager.controller.get_conf("DirPort") or strings.MISC_STRINGS[strings.Misc.UNKNOWN]
 
     def _get_info(self) -> None:
         bw_event_cache = self.relay_manager.controller.get_info("bw-event-cache")
@@ -134,7 +142,7 @@ class AppData:
             "network_liveness": self.relay_manager.controller.get_info("network-liveness") == "up",
             "bootstrap_percent": int(self.relay_manager.controller.get_info("status/bootstrap-phase").split(" ")[2].split("=")[-1]),
             "bootstrap_phase": bootstrap_phase,
-            "has_enough_dir_info": self.relay_manager.controller.get_info("status/enough-dir-info") == "1",
+            "enough_dir_info": self.relay_manager.controller.get_info("status/enough-dir-info") == "1",
             "good_server_descriptor": self.relay_manager.controller.get_info("status/good-server-descriptor") == "1",
             "reachability": self.relay_manager.controller.get_info("status/reachability-succeeded/or") == "1",
         }
@@ -143,25 +151,17 @@ class AppData:
         self.connection_status_map = defaultdict(lambda: 0)
         orconn_status = self.relay_manager.controller.get_info("orconn-status")
 
-        for status in orconn_status.split("\n"):
+        for status in orconn_status.splitlines():
             _node, state = status.split(" ")
-            self.connection_status_map[state] += 1
-
-    def _get_consensus_info(self) -> None:
-        consensus = self.relay_manager.controller.get_info("dir/status-vote/current/consensus-microdesc").splitlines()[:90]
-        for line in consensus:
-            key, value = line.split(" ", 1)
-            if key == "servers-version":
-                self.consensus_info["servers_version"] = value
-                break
+            self.connection_status_map[ORConnStatus(state)] += 1
 
     @staticmethod
     def format_bytes(b: int) -> str:
         if b < 10**3:
-            return f"{int(b)}B"
+            return f"{int(b)}{strings.SUFFIXES[strings.Suffix.BYTES]}"
         elif b < 10**6:
-            return f"{int(b / (10**3))}KB"
+            return f"{int(b / (10**3))}{strings.SUFFIXES[strings.Suffix.KILOBYTES]}"
         elif b < 10**9:
-            return f"{int(b / (10**6))}MB"
+            return f"{int(b / (10**6))}{strings.SUFFIXES[strings.Suffix.MEGABYTES]}"
         else:
-            return f"{int(b / (10**9))}GB"
+            return f"{int(b / (10**9))}{strings.SUFFIXES[strings.Suffix.GIGABYTES]}"

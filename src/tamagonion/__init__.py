@@ -2,7 +2,6 @@ import argparse
 import sys
 from time import sleep
 
-from tamagonion import art
 from tamagonion.app_data import AppData
 from tamagonion.draw import Paper, Pen, Screen, StopDrawingException
 from tamagonion.relay_manager import RelayManager
@@ -15,14 +14,13 @@ def main() -> None:
     app_data = AppData(relay_manager)
     paper = Paper(app_data)
 
-    Pen.erase(include_frame=True)
+    Pen.erase_screen()
     Pen.hide_cursor().move_home()
 
     try:
         paper.setup_scan_key()
         while True:
             app_data.update()
-            Pen.draw(art.frame, 0, 0)
             paper.draw()
 
             for _i in range(20):
@@ -48,9 +46,10 @@ def main() -> None:
     except KeyboardInterrupt, StopDrawingException:
         pass
     finally:
-        Pen.erase(include_frame=True)
+        Pen.erase_screen()
         Pen.move_home().show_cursor()
         paper.tear_down_scan_key()
+        relay_manager.controller.close()
 
     sys.exit(0)
 
@@ -58,7 +57,7 @@ def main() -> None:
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="tamagonion",
-        description="This is Stinky, it's a Tamagonion and it's running your Tor relay.",
+        description="This is Stinky, it's a Tamagonion and it's running your Tor relay",
         epilog="Hack the planet!",
     )
 
