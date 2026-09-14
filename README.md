@@ -4,8 +4,6 @@
 
 This is Stinky, it's a Tamagonion and it's running your Tor relay. Tamagonions are cyber creatures that have bravely stepped out of the Tor network to learn what life is like in the clearnet and to help you monitor your relay. It mostly loafs around and browses the Web anonymously, but it's more entertaining than looking at a graph!
 
-More seriously, this program is meant to help you monitor your Tor relay in a more fun way. Start Tamagonion and just let it do its thing in the corner of your desktop or in a tmux split to get a general idea of the state of your relay. It is built to have minimal dependencies, only relying on [Stem](https://stem.torproject.org/).
-
 ```
              ▌▌
              ▓▓▀
@@ -17,6 +15,8 @@ More seriously, this program is meant to help you monitor your Tor relay in a mo
       █              █
        █▄▄▄▄▄▄▄▄▄▄▄▄█
 ```
+
+More seriously, this program is meant to help you monitor your Tor relay in a more fun way. Start Tamagonion and just let it do its thing in the corner of your desktop or in a tmux split to get a general idea of the state of your relay. It is built to have minimal dependencies, only relying on [Stem](https://stem.torproject.org/).
 
 ## Activation
 
@@ -96,7 +96,7 @@ Tamagonions are very attuned to a relay's operation. You can know how your relay
 | Old          | The relay has the "StaleDesc" flag.                                                                                       |
 | Egg          | The relay is bootstrapping.                                                                                               |
 | Slow         | The relay doesn't have the "Fast" flag.                                                                                   |
-| Hurt         | The Tor binary version is either obsolete, unrecommended or unknown.                                                      |
+| Hurt         | The Tor binary version is either obsolete or unrecommended.                                                               |
 | Asleep       | This just means that it's bed time for Stinky. What, you expected it to never sleep?                                      |
 
 ## Room status check
