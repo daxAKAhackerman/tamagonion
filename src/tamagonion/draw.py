@@ -259,6 +259,7 @@ class Paper:
 
     def draw_status(self) -> None:
         Pen.erase_in_frame(art.status_frame)
+        Pen.draw(art.home_frame, 0, 0)
         Pen.draw(art.status_frame, 1, 1)
 
         info = self.app_data.info
@@ -334,6 +335,7 @@ class Paper:
 
     def draw_hints(self) -> None:
         Pen.erase_in_frame(art.hints_frame)
+        Pen.draw(art.home_frame, 0, 0)
         Pen.draw(art.hints_frame, 1, 1)
 
         info = self.app_data.info
