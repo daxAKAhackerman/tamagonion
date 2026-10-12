@@ -1,12 +1,4 @@
-from enum import StrEnum
-
-
-class Effect(StrEnum):
-    RESET = "\033[0m"
-    BOLD = "\033[1m"
-    DIM = "\033[2m"
-    UNDERLINE = "\033[4m"
-
+from tamagonion.effects import Effect, RichStr
 
 home_frame = f"""┌──────────────────────────────────────────────┐
 │                                              │
@@ -27,7 +19,7 @@ home_frame = f"""┌────────────────────
 │                                              │
 │                                              │
 │                                              │
-└───────────────────────|{Effect.BOLD}{Effect.UNDERLINE}H{Effect.RESET}ome│{Effect.BOLD}{Effect.UNDERLINE}S{Effect.RESET}tatus│H{Effect.BOLD}{Effect.UNDERLINE}i{Effect.RESET}nts│{Effect.BOLD}{Effect.UNDERLINE}Q{Effect.RESET}uit┘"""
+└───────────────────────|{RichStr("H", effects=(Effect.BOLD, Effect.UNDERLINE))}ome│{RichStr("S", effects=(Effect.BOLD, Effect.UNDERLINE))}tatus│H{RichStr("i", effects=(Effect.BOLD, Effect.UNDERLINE))}nts│{RichStr("Q", effects=(Effect.BOLD, Effect.UNDERLINE))}uit┘"""
 
 status_frame = """┌Status──────────────────────────────────────┐
 │                                            │
@@ -65,6 +57,10 @@ hints_frame = """┌Hints──────────────────�
 │                                            │
 │                                            │
 └────────────────────────────────────────────┘"""
+
+hint_menu_scroll_up = f"Scroll {RichStr('u', effects=(Effect.BOLD, Effect.UNDERLINE))}p"
+hint_menu_scroll_down = f"Scroll {RichStr('d', effects=(Effect.BOLD, Effect.UNDERLINE))}own"
+hint_menu = "|{hint_menu_scroll_up}|{hint_menu_scroll_down}"
 
 stinky_base = [
     """       ▌▌
