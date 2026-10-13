@@ -3,8 +3,9 @@ import sys
 from time import sleep
 
 from tamagonion.app_data import AppData
-from tamagonion.draw import Paper, Pen, Screen, StopDrawingException
+from tamagonion.draw import Paper, Screen, StopDrawingException
 from tamagonion.relay_manager import RelayManager
+from tamagonion.render import DefaultRenderer
 
 
 def main() -> None:
@@ -13,15 +14,16 @@ def main() -> None:
     relay_manager = RelayManager(ip_addr=args.ip, port=args.port, password=args.password, socket_file=args.socket_file)
     app_data = AppData(relay_manager)
     paper = Paper(app_data)
+    renderer = DefaultRenderer()
 
-    Pen.erase_screen()
-    Pen.hide_cursor().move_home()
+    renderer.setup()
 
     try:
         paper.setup_scan_key()
         while True:
             app_data.update()
             paper.draw()
+            renderer.render(paper.buffer)
 
             for _i in range(20):
                 if key := paper.scan_key():
@@ -46,8 +48,7 @@ def main() -> None:
     except KeyboardInterrupt, StopDrawingException:
         pass
     finally:
-        Pen.erase_screen()
-        Pen.move_home().show_cursor()
+        renderer.tear_down()
         paper.tear_down_scan_key()
         relay_manager.controller.close()
 

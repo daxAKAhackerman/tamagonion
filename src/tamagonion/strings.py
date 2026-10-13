@@ -1,7 +1,5 @@
 from enum import Enum, auto
 
-from tamagonion import art
-
 
 class Hint(Enum):
     BOOTSTRAP = auto()
@@ -101,7 +99,6 @@ class Misc(Enum):
     HINT_ORPORT_UNREACHABLE = auto()
     HINT_DIRPORT_UNREACHABLE = auto()
     HINT_ORPORT_AND_DIRPORT_UNREACHABLE = auto()
-    HINT_MENU = auto()
     STATUS_LIVE = auto()
     STATUS_DOWN = auto()
     STATUS_REACHABLE = auto()
@@ -116,7 +113,6 @@ MISC_STRINGS = {
     Misc.HINT_ORPORT_UNREACHABLE: "ORPort ({orport}) or DirPort ({dirport})",
     Misc.HINT_DIRPORT_UNREACHABLE: "ORPort ({orport})",
     Misc.HINT_ORPORT_AND_DIRPORT_UNREACHABLE: "DirPort ({dirport})",
-    Misc.HINT_MENU: f"|{{up_dim}}Scroll {art.Effect.BOLD}{art.Effect.UNDERLINE}u{art.Effect.RESET}{{up_dim}}p{art.Effect.RESET}|{{down_dim}}Scroll {art.Effect.BOLD}{art.Effect.UNDERLINE}d{art.Effect.RESET}{{down_dim}}own{art.Effect.RESET}",
     Misc.STATUS_LIVE: "Live",
     Misc.STATUS_DOWN: "Down",
     Misc.STATUS_REACHABLE: "Reachable",
