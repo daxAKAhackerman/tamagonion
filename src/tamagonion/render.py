@@ -1,49 +1,85 @@
 import re
+from enum import StrEnum
+
+OPENING_TAG_REGEX = re.compile(r"\[([A-Z]+?)\]")
+CLOSING_TAG_REGEX = re.compile(r"\[\/([A-Z]+?)\]")
+
+
+class AnsiEscapeSequences(StrEnum):
+    RED = "\033[31m"
+    YELLOW = "\033[33m"
+    GREEN = "\033[32m"
+    GREY = "\033[90m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+    RESET_COLOR = "\033[39m"
+    RESET_BOLD = "\033[22m"
+    RESET_UNDERLINE = "\033[24m"
+    HIDE_CURSOR = "\033[?25l"
+    SHOW_CURSOR = "\033[?25h"
+    MOVE_HOME = "\033[H"
+    ERASE_SCREEN = "\033[2J"
+    ENTER_ALT_BUFFER = "\033[?1049h"
+    EXIT_ALT_BUFFER = "\033[?1049l"
+
+
+RESET_CODES = {
+    AnsiEscapeSequences.RED: AnsiEscapeSequences.RESET_COLOR,
+    AnsiEscapeSequences.YELLOW: AnsiEscapeSequences.RESET_COLOR,
+    AnsiEscapeSequences.GREEN: AnsiEscapeSequences.RESET_COLOR,
+    AnsiEscapeSequences.GREY: AnsiEscapeSequences.RESET_COLOR,
+    AnsiEscapeSequences.BOLD: AnsiEscapeSequences.RESET_BOLD,
+    AnsiEscapeSequences.UNDERLINE: AnsiEscapeSequences.RESET_UNDERLINE,
+}
 
 
 class DefaultRenderer:
-    tag_regex: re.Pattern[str]
-
-    def __init__(self) -> None:
-        self.tag_regex = re.compile(r"\[[A-Z]+?\](.+?)\[\/[A-Z]+?\]")
-
     def setup(self) -> None:
-        self.__class__.hide_cursor()
-        self.__class__.erase_screen()
-        self.__class__.move_home()
+        self.enter_alt_buffer()
+        self.hide_cursor()
 
     def tear_down(self) -> None:
-        self.__class__.erase_screen()
-        self.__class__.move_home()
-        self.__class__.show_cursor()
+        self.show_cursor()
+        self.exit_alt_buffer()
 
     def render(self, buffer: str) -> None:
-        self.__class__.move_home()
-        buffer = self.color(buffer)
+        self.move_home()
+        buffer = self._apply_tags(buffer)
         print(buffer, end="")
 
-    def color(self, buffer: str) -> str:
-        while True:
-            matches = list(re.finditer(self.tag_regex, buffer))
+    def _apply_tags(self, buffer: str) -> str:
+        unique_matches = self._get_unique_tag_matches(buffer, OPENING_TAG_REGEX)
+        for match in unique_matches:
+            ansi_code = AnsiEscapeSequences[match[1]]
+            buffer = buffer.replace(match[0], ansi_code)
 
-            if not matches:
-                return buffer
+        unique_matches = self._get_unique_tag_matches(buffer, CLOSING_TAG_REGEX)
+        for match in unique_matches:
+            ansi_code = RESET_CODES[AnsiEscapeSequences[match[1]]]
+            buffer = buffer.replace(match[0], ansi_code)
 
-            for match in matches:
-                buffer = buffer.replace(match.group(0), match.group(1), 1)
+        return buffer
+
+    def _get_unique_tag_matches(self, buffer: str, regex: re.Pattern[str]) -> set[tuple[str, str]]:
+        matches = list(re.finditer(regex, buffer))
+        return {(match.group(0), match.group(1)) for match in matches}
 
     @staticmethod
     def hide_cursor() -> None:
-        print("\033[?25l", end="")
+        print(AnsiEscapeSequences.HIDE_CURSOR, end="")
 
     @staticmethod
     def show_cursor() -> None:
-        print("\033[?25h", end="")
+        print(AnsiEscapeSequences.SHOW_CURSOR, end="")
 
     @staticmethod
     def move_home() -> None:
-        print("\033[H", end="")
+        print(AnsiEscapeSequences.MOVE_HOME, end="")
 
     @staticmethod
-    def erase_screen() -> None:
-        print("\033[2J", end="")
+    def enter_alt_buffer() -> None:
+        print(AnsiEscapeSequences.ENTER_ALT_BUFFER, end="")
+
+    @staticmethod
+    def exit_alt_buffer() -> None:
+        print(AnsiEscapeSequences.EXIT_ALT_BUFFER, end="")

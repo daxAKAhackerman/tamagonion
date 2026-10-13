@@ -5,11 +5,11 @@ class Color(StrEnum):
     RED = "RED"
     GREEN = "GREEN"
     YELLOW = "YELLOW"
+    GREY = "GREY"
 
 
 class Effect(StrEnum):
     BOLD = "BOLD"
-    DIM = "DIM"
     UNDERLINE = "UNDERLINE"
 
 

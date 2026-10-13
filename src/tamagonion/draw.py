@@ -382,9 +382,9 @@ class Paper:
         hints_view = strings.SEPARATORS[strings.Separator.NEW_LINE].join(hints_lines[0 + self.hints_scroll_index : frame_vert_space + self.hints_scroll_index])
         Pen.draw(self, hints_view, 2, 2)
 
-        scroll_up = RichStr(art.hint_menu_scroll_up, effects=(Effect.DIM,)) if self.hints_scroll_index == 0 else art.hint_menu_scroll_up
+        scroll_up = RichStr(art.hint_menu_scroll_up, color=Color.GREY) if self.hints_scroll_index == 0 else art.hint_menu_scroll_up
         scroll_down = (
-            RichStr(art.hint_menu_scroll_down, effects=(Effect.DIM,))
+            RichStr(art.hint_menu_scroll_down, color=Color.GREY)
             if self.hints_scroll_index == frame_vert_space - 2 or len(hints_lines) <= frame_vert_space
             else art.hint_menu_scroll_down
         )
