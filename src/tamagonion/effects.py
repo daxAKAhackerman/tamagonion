@@ -23,9 +23,6 @@ class RichStr:
         self.color = color
         self.effects = effects
 
-    def __len__(self) -> int:
-        return len(self.text)
-
     def __str__(self) -> str:
         rich_str = self.text
 
