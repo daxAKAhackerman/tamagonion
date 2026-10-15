@@ -58,6 +58,7 @@ class AppData:
     relay_name: str = strings.MISC_STRINGS[strings.Misc.UNKNOWN]
     orport: str = strings.MISC_STRINGS[strings.Misc.UNKNOWN]
     dirport: str = strings.MISC_STRINGS[strings.Misc.UNKNOWN]
+    bridge_relay: bool = False
     frame: int = 0
     frame_skip: bool = False
     instance: Self | None = None
@@ -75,6 +76,7 @@ class AppData:
         self._get_relay_name()
         self._get_orport()
         self._get_dirport()
+        self._get_bridge_relay()
 
     def __new__(cls, *args, **kwargs) -> Self:
         if cls.instance is None:
@@ -124,6 +126,9 @@ class AppData:
 
     def _get_dirport(self) -> None:
         self.dirport = self.relay_manager.controller.get_conf("DirPort") or strings.MISC_STRINGS[strings.Misc.UNKNOWN]
+
+    def _get_bridge_relay(self) -> None:
+        self.bridge_relay = self.relay_manager.controller.get_conf("BridgeRelay") == "1"
 
     def _get_info(self) -> None:
         bw_event_cache = self.relay_manager.controller.get_info("bw-event-cache")

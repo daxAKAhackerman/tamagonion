@@ -111,6 +111,7 @@ Stinky's room can get a bit crowded with things it collected along the way. But 
 | Books                | The relay has the "HSDir" flag.                |
 | Cassette             | The relay has the "V2Dir" flag.                |
 | Shield               | The relay has the "Guard" flag.                |
+| Sunglasses           | The relay is a bridge.                         |
 
 ## Status check
 
