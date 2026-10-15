@@ -124,13 +124,13 @@ class Paper:
             Pen.draw(self, art.stinky_embarrassed[self.app_data.frame], 10, 7)
 
         # Relay statuses
-        elif Flag.NO_ED_CONSENSUS in self.app_data.flags or {Flag.VALID, Flag.RUNNING} - set(self.app_data.flags):
+        elif (Flag.NO_ED_CONSENSUS in self.app_data.flags or {Flag.VALID, Flag.RUNNING} - set(self.app_data.flags)) and not self.app_data.bridge_relay:
             Pen.draw(self, art.stinky_sad[self.app_data.frame], 10, 7)
         elif Flag.STALE_DESC in self.app_data.flags:
             Pen.draw(self, art.stinky_old[self.app_data.frame], 10, 7)
         elif self.app_data.version_status in {VersionStatus.OBSOLETE, VersionStatus.UNRECOMMENDED}:
             Pen.draw(self, art.stinky_hurt[self.app_data.frame], 10, 7)
-        elif Flag.STABLE not in self.app_data.flags:
+        elif Flag.STABLE not in self.app_data.flags and not self.app_data.bridge_relay:
             Pen.draw(self, art.stinky_unstable[self.app_data.frame], 10, 7)
         elif Flag.MIDDLE_ONLY in self.app_data.flags:
             Pen.draw(self, art.stinky_bored[self.app_data.frame], 10, 7)
@@ -155,12 +155,16 @@ class Paper:
             if Flag.V2_DIR in self.app_data.flags:
                 Pen.draw(self, art.cassette, 16, 1)
 
+            ## Draw the glasses
+            if not self.app_data.bridge_relay and info["reachability"]:
+                Pen.draw(self, art.glasses[self.app_data.frame], 14, 9)
+
             ## Draw the shield
             if Flag.GUARD in self.app_data.flags and info["reachability"]:
                 Pen.draw(self, art.shield[self.app_data.frame], 13, 19)
 
         ## Slow down the animation
-        if Flag.FAST not in self.app_data.flags and self.app_data.frame_skip:
+        if (Flag.FAST not in self.app_data.flags and self.app_data.frame_skip) and not self.app_data.bridge_relay:
             self.app_data.frame_skip = False
         else:
             self.app_data.frame ^= 1
@@ -332,12 +336,12 @@ class Paper:
                 strings.HINT_TITLES[strings.Hint.ED_CONSENSUS_FLAG],
                 strings.HINT_DESCRIPTIONS[strings.Hint.ED_CONSENSUS_FLAG],
             )
-        if Flag.VALID not in self.app_data.flags:
+        if Flag.VALID not in self.app_data.flags and not self.app_data.bridge_relay:
             hints += Paper._wrap_hint(
                 strings.HINT_TITLES[strings.Hint.NO_VALID_FLAG],
                 strings.HINT_DESCRIPTIONS[strings.Hint.NO_VALID_FLAG],
             )
-        if Flag.RUNNING not in self.app_data.flags:
+        if Flag.RUNNING not in self.app_data.flags and not self.app_data.bridge_relay:
             hints += Paper._wrap_hint(
                 strings.HINT_TITLES[strings.Hint.NO_RUNNING_FLAG],
                 strings.HINT_DESCRIPTIONS[strings.Hint.NO_RUNNING_FLAG],
@@ -352,7 +356,7 @@ class Paper:
                 strings.HINT_TITLES[strings.Hint.VERSION_UNRECOMMENDED],
                 strings.HINT_DESCRIPTIONS[strings.Hint.VERSION_UNRECOMMENDED].format(version=self.app_data.recommended_version),
             )
-        if Flag.STABLE not in self.app_data.flags:
+        if Flag.STABLE not in self.app_data.flags and not self.app_data.bridge_relay:
             hints += Paper._wrap_hint(
                 strings.HINT_TITLES[strings.Hint.NO_STABLE_FLAG],
                 strings.HINT_DESCRIPTIONS[strings.Hint.NO_STABLE_FLAG],
@@ -367,7 +371,7 @@ class Paper:
                 strings.HINT_TITLES[strings.Hint.BAD_EXIT_FLAG],
                 strings.HINT_DESCRIPTIONS[strings.Hint.BAD_EXIT_FLAG],
             )
-        if Flag.FAST not in self.app_data.flags:
+        if Flag.FAST not in self.app_data.flags and not self.app_data.bridge_relay:
             hints += Paper._wrap_hint(
                 strings.HINT_TITLES[strings.Hint.NO_FAST_FLAG],
                 strings.HINT_DESCRIPTIONS[strings.Hint.NO_FAST_FLAG],
