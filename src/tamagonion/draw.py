@@ -260,12 +260,11 @@ class Paper:
         Pen.draw(self, strings.STATUS_DESCRIPTION[strings.Status.VERSION_STATUS].format(version_status=version_status), 7, 2)
         Pen.draw(self, strings.STATUS_DESCRIPTION[strings.Status.BRIDGE].format(is_bridge=is_bridge), 8, 2)
 
-        self._draw_flags()
+        self._draw_flags(9)
 
-    def _draw_flags(self) -> None:
+    def _draw_flags(self, line_pos_y: int) -> None:
         line = ""
         line_len = 0
-        line_pos_y = 9
         max_line_len = len(art.status_frame.splitlines()[0]) - len(strings.STATUS_DESCRIPTION[strings.Status.FLAGS])
 
         Pen.draw(self, strings.STATUS_DESCRIPTION[strings.Status.FLAGS], line_pos_y, 2)
