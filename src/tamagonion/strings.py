@@ -82,6 +82,7 @@ class Status(Enum):
     REACHABILITY = auto()
     VERSION_STATUS = auto()
     FLAGS = auto()
+    BRIDGE = auto()
 
 
 STATUS_DESCRIPTION = {
@@ -92,6 +93,7 @@ STATUS_DESCRIPTION = {
     Status.REACHABILITY: "Reachability: {reachability}",
     Status.VERSION_STATUS: "Version status: {version_status}",
     Status.FLAGS: "Flags: ",
+    Status.BRIDGE: "Bridge: {is_bridge}",
 }
 
 
