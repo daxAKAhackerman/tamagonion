@@ -239,6 +239,11 @@ class Paper:
             if info["reachability"]
             else RichStr(strings.MISC_STRINGS[strings.Misc.STATUS_UNREACHABLE], Color.RED)
         )
+        is_bridge = (
+            RichStr(strings.MISC_STRINGS[strings.Misc.STATUS_YES], Color.GREEN)
+            if self.app_data.bridge_relay
+            else RichStr(strings.MISC_STRINGS[strings.Misc.STATUS_NO], Color.GREEN)
+        )
 
         if self.app_data.version_status == VersionStatus.RECOMMENDED:
             version_status = RichStr(self.app_data.version_status, Color.GREEN)
@@ -253,13 +258,14 @@ class Paper:
         Pen.draw(self, strings.STATUS_DESCRIPTION[strings.Status.GOOD_SERVER_DESCRIPTOR].format(good_server_descriptor=good_server_descriptor), 5, 2)
         Pen.draw(self, strings.STATUS_DESCRIPTION[strings.Status.REACHABILITY].format(reachability=reachability), 6, 2)
         Pen.draw(self, strings.STATUS_DESCRIPTION[strings.Status.VERSION_STATUS].format(version_status=version_status), 7, 2)
+        Pen.draw(self, strings.STATUS_DESCRIPTION[strings.Status.BRIDGE].format(is_bridge=is_bridge), 8, 2)
 
         self._draw_flags()
 
     def _draw_flags(self) -> None:
         line = ""
         line_len = 0
-        line_pos_y = 8
+        line_pos_y = 9
         max_line_len = len(art.status_frame.splitlines()[0]) - len(strings.STATUS_DESCRIPTION[strings.Status.FLAGS])
 
         Pen.draw(self, strings.STATUS_DESCRIPTION[strings.Status.FLAGS], line_pos_y, 2)
