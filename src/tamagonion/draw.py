@@ -156,7 +156,7 @@ class Paper:
                 Pen.draw(self, art.cassette, 16, 1)
 
             ## Draw the glasses
-            if not self.app_data.bridge_relay and info["reachability"]:
+            if self.app_data.bridge_relay and info["reachability"]:
                 Pen.draw(self, art.glasses[self.app_data.frame], 14, 9)
 
             ## Draw the shield
