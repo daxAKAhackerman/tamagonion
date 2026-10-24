@@ -184,7 +184,7 @@ pane=$(tmux split-window -h -d -l 48 -P -F '#{pane_id}'); tmux split-window -v -
 
 ## You may also like...
 
-- [Testing Tor Network](https://github.com/daxAKAhackerman/testing-tor-network) - CLI tool to setup a testing TOR network with Docker
+- [Testing Tor Network](https://github.com/daxAKAhackerman/testing-tor-network) - CLI tool to setup a testing Tor network with Docker
 - [Tor HashedControlPassword Brute](https://github.com/daxAKAhackerman/tor-hashed-control-password-brute) - C program to execute a dictionary attack against a Tor HashedControlPassword value
 
 ---
