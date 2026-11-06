@@ -36,10 +36,16 @@ class Pen:
 
         for line in image.splitlines():
             line_len = len(re.sub(TAG_REGEX, "", line))
-            buffer_as_lines[pos_y] = buffer_as_lines[pos_y][:pos_x] + line + buffer_as_lines[pos_y][pos_x + line_len :]
+            buffer_as_lines[pos_y] = (
+                buffer_as_lines[pos_y][:pos_x]
+                + line
+                + buffer_as_lines[pos_y][pos_x + line_len :]
+            )
             pos_y += 1
 
-        paper.buffer = strings.SEPARATORS[strings.Separator.NEW_LINE].join(buffer_as_lines)
+        paper.buffer = strings.SEPARATORS[strings.Separator.NEW_LINE].join(
+            buffer_as_lines
+        )
 
     @classmethod
     def erase_in_frame(cls, paper: Paper, frame: str) -> type[Self]:
@@ -57,11 +63,13 @@ class Paper:
     app_data: AppData
     saved_term_setting: termios._AttrReturn
     saved_fd: Any
+    headless: bool
     active_screen: Screen = Screen.HOME
     hints_scroll_index: int = 0
     instance: Self | None = None
 
-    def __init(self, app_data: AppData) -> None:
+    def __init(self, app_data: AppData, headless: bool) -> None:
+        self.headless = headless
         self.app_data = app_data
         self.clear_buffer()
 
@@ -72,9 +80,10 @@ class Paper:
         return cls.instance
 
     def clear_buffer(self) -> None:
-        self.buffer = ((" " * BUFFER_WIDTH + strings.SEPARATORS[strings.Separator.NEW_LINE]) * BUFFER_HEIGHT).rstrip(
-            strings.SEPARATORS[strings.Separator.NEW_LINE]
-        )
+        self.buffer = (
+            (" " * BUFFER_WIDTH + strings.SEPARATORS[strings.Separator.NEW_LINE])
+            * BUFFER_HEIGHT
+        ).rstrip(strings.SEPARATORS[strings.Separator.NEW_LINE])
 
     def setup_scan_key(self) -> None:
         self.saved_fd = sys.stdin.fileno()
@@ -101,8 +110,9 @@ class Paper:
                 self.draw_hints()
 
     def draw_home(self) -> None:
-        Pen.erase_in_frame(self, art.home_frame)
-        Pen.draw(self, art.home_frame, 0, 0)
+        frame = art.headless_home_frame if self.headless else art.home_frame
+        Pen.erase_in_frame(self, frame)
+        Pen.draw(self, frame, 0, 0)
 
         info = self.app_data.info
         ## Draw Stinky
@@ -124,11 +134,17 @@ class Paper:
             Pen.draw(self, art.stinky_embarrassed[self.app_data.frame], 10, 7)
 
         # Relay statuses
-        elif (Flag.NO_ED_CONSENSUS in self.app_data.flags or {Flag.VALID, Flag.RUNNING} - set(self.app_data.flags)) and not self.app_data.bridge_relay:
+        elif (
+            Flag.NO_ED_CONSENSUS in self.app_data.flags
+            or {Flag.VALID, Flag.RUNNING} - set(self.app_data.flags)
+        ) and not self.app_data.bridge_relay:
             Pen.draw(self, art.stinky_sad[self.app_data.frame], 10, 7)
         elif Flag.STALE_DESC in self.app_data.flags:
             Pen.draw(self, art.stinky_old[self.app_data.frame], 10, 7)
-        elif self.app_data.version_status in {VersionStatus.OBSOLETE, VersionStatus.UNRECOMMENDED}:
+        elif self.app_data.version_status in {
+            VersionStatus.OBSOLETE,
+            VersionStatus.UNRECOMMENDED,
+        }:
             Pen.draw(self, art.stinky_hurt[self.app_data.frame], 10, 7)
         elif Flag.STABLE not in self.app_data.flags and not self.app_data.bridge_relay:
             Pen.draw(self, art.stinky_unstable[self.app_data.frame], 10, 7)
@@ -164,15 +180,31 @@ class Paper:
                 Pen.draw(self, art.shield[self.app_data.frame], 13, 19)
 
         ## Slow down the animation
-        if (Flag.FAST not in self.app_data.flags and self.app_data.frame_skip) and not self.app_data.bridge_relay:
+        if (
+            Flag.FAST not in self.app_data.flags and self.app_data.frame_skip
+        ) and not self.app_data.bridge_relay:
             self.app_data.frame_skip = False
         else:
             self.app_data.frame ^= 1
             self.app_data.frame_skip = True
 
         ## Draw the stats
-        Pen.draw(self, strings.STAT_DESCRIPTIONS[strings.Stat.NICKNAME].format(name=self.app_data.relay_name), 1, 1)
-        Pen.draw(self, strings.STAT_DESCRIPTIONS[strings.Stat.UPTIME].format(uptime=self.app_data.formated_uptime), 2, 1)
+        Pen.draw(
+            self,
+            strings.STAT_DESCRIPTIONS[strings.Stat.NICKNAME].format(
+                name=self.app_data.relay_name
+            ),
+            1,
+            1,
+        )
+        Pen.draw(
+            self,
+            strings.STAT_DESCRIPTIONS[strings.Stat.UPTIME].format(
+                uptime=self.app_data.formated_uptime
+            ),
+            2,
+            1,
+        )
         Pen.draw(
             self,
             strings.STAT_DESCRIPTIONS[strings.Stat.CONNECTIONS].format(
@@ -205,7 +237,14 @@ class Paper:
             5,
             1,
         )
-        Pen.draw(self, strings.STAT_DESCRIPTIONS[strings.Stat.VERSION].format(version=self.app_data.version), 6, 1)
+        Pen.draw(
+            self,
+            strings.STAT_DESCRIPTIONS[strings.Stat.VERSION].format(
+                version=self.app_data.version
+            ),
+            6,
+            1,
+        )
 
     def draw_status(self) -> None:
         Pen.erase_in_frame(self, art.status_frame)
@@ -220,9 +259,15 @@ class Paper:
             else RichStr(strings.MISC_STRINGS[strings.Misc.STATUS_DOWN], Color.RED)
         )
         bootstrap_progress = (
-            RichStr(f"{info['bootstrap_percent']}{strings.SUFFIXES[strings.Suffix.PERCENT]}", Color.GREEN)
+            RichStr(
+                f"{info['bootstrap_percent']}{strings.SUFFIXES[strings.Suffix.PERCENT]}",
+                Color.GREEN,
+            )
             if info["bootstrap_percent"] == 100
-            else RichStr(f"{info['bootstrap_percent']}{strings.SUFFIXES[strings.Suffix.PERCENT]}", Color.RED)
+            else RichStr(
+                f"{info['bootstrap_percent']}{strings.SUFFIXES[strings.Suffix.PERCENT]}",
+                Color.RED,
+            )
         )
         enough_dir_info = (
             RichStr(strings.MISC_STRINGS[strings.Misc.STATUS_YES], Color.GREEN)
@@ -237,7 +282,9 @@ class Paper:
         reachability = (
             RichStr(strings.MISC_STRINGS[strings.Misc.STATUS_REACHABLE], Color.GREEN)
             if info["reachability"]
-            else RichStr(strings.MISC_STRINGS[strings.Misc.STATUS_UNREACHABLE], Color.RED)
+            else RichStr(
+                strings.MISC_STRINGS[strings.Misc.STATUS_UNREACHABLE], Color.RED
+            )
         )
         is_bridge = (
             RichStr(strings.MISC_STRINGS[strings.Misc.STATUS_YES], Color.GREEN)
@@ -247,44 +294,120 @@ class Paper:
 
         if self.app_data.version_status == VersionStatus.RECOMMENDED:
             version_status = RichStr(self.app_data.version_status, Color.GREEN)
-        elif self.app_data.version_status in {VersionStatus.OBSOLETE, VersionStatus.UNRECOMMENDED}:
+        elif self.app_data.version_status in {
+            VersionStatus.OBSOLETE,
+            VersionStatus.UNRECOMMENDED,
+        }:
             version_status = RichStr(self.app_data.version_status, Color.RED)
         else:
             version_status = RichStr(self.app_data.version_status, Color.YELLOW)
 
-        Pen.draw(self, strings.STATUS_DESCRIPTION[strings.Status.NETWORK_LIVENESS].format(network_liveness=network_liveness), 2, 2)
-        Pen.draw(self, strings.STATUS_DESCRIPTION[strings.Status.BOOTSTRAP_PROGRESS].format(bootstrap_progress=bootstrap_progress), 3, 2)
-        Pen.draw(self, strings.STATUS_DESCRIPTION[strings.Status.ENOUGH_DIR_INFO].format(enough_dir_info=enough_dir_info), 4, 2)
-        Pen.draw(self, strings.STATUS_DESCRIPTION[strings.Status.GOOD_SERVER_DESCRIPTOR].format(good_server_descriptor=good_server_descriptor), 5, 2)
-        Pen.draw(self, strings.STATUS_DESCRIPTION[strings.Status.REACHABILITY].format(reachability=reachability), 6, 2)
-        Pen.draw(self, strings.STATUS_DESCRIPTION[strings.Status.VERSION_STATUS].format(version_status=version_status), 7, 2)
-        Pen.draw(self, strings.STATUS_DESCRIPTION[strings.Status.BRIDGE].format(is_bridge=is_bridge), 8, 2)
+        Pen.draw(
+            self,
+            strings.STATUS_DESCRIPTION[strings.Status.NETWORK_LIVENESS].format(
+                network_liveness=network_liveness
+            ),
+            2,
+            2,
+        )
+        Pen.draw(
+            self,
+            strings.STATUS_DESCRIPTION[strings.Status.BOOTSTRAP_PROGRESS].format(
+                bootstrap_progress=bootstrap_progress
+            ),
+            3,
+            2,
+        )
+        Pen.draw(
+            self,
+            strings.STATUS_DESCRIPTION[strings.Status.ENOUGH_DIR_INFO].format(
+                enough_dir_info=enough_dir_info
+            ),
+            4,
+            2,
+        )
+        Pen.draw(
+            self,
+            strings.STATUS_DESCRIPTION[strings.Status.GOOD_SERVER_DESCRIPTOR].format(
+                good_server_descriptor=good_server_descriptor
+            ),
+            5,
+            2,
+        )
+        Pen.draw(
+            self,
+            strings.STATUS_DESCRIPTION[strings.Status.REACHABILITY].format(
+                reachability=reachability
+            ),
+            6,
+            2,
+        )
+        Pen.draw(
+            self,
+            strings.STATUS_DESCRIPTION[strings.Status.VERSION_STATUS].format(
+                version_status=version_status
+            ),
+            7,
+            2,
+        )
+        Pen.draw(
+            self,
+            strings.STATUS_DESCRIPTION[strings.Status.BRIDGE].format(
+                is_bridge=is_bridge
+            ),
+            8,
+            2,
+        )
 
         self._draw_flags(9)
 
     def _draw_flags(self, line_pos_y: int) -> None:
         line = ""
         line_len = 0
-        max_line_len = len(art.status_frame.splitlines()[0]) - len(strings.STATUS_DESCRIPTION[strings.Status.FLAGS])
+        max_line_len = len(art.status_frame.splitlines()[0]) - len(
+            strings.STATUS_DESCRIPTION[strings.Status.FLAGS]
+        )
 
         Pen.draw(self, strings.STATUS_DESCRIPTION[strings.Status.FLAGS], line_pos_y, 2)
 
         for flag in self.app_data.flags:
-            added_len = len(flag) if flag == self.app_data.flags[-1] else len(flag + strings.SEPARATORS[strings.Separator.COMMA])
+            added_len = (
+                len(flag)
+                if flag == self.app_data.flags[-1]
+                else len(flag + strings.SEPARATORS[strings.Separator.COMMA])
+            )
             if line_len + added_len > max_line_len:
-                Pen.draw(self, line.rstrip(strings.SEPARATORS[strings.Separator.COMMA]), line_pos_y, 9)
+                Pen.draw(
+                    self,
+                    line.rstrip(strings.SEPARATORS[strings.Separator.COMMA]),
+                    line_pos_y,
+                    9,
+                )
                 line_pos_y += 1
                 line = ""
                 line_len = 0
 
             colored_flag = (
-                RichStr(flag, Color.RED) if flag in {Flag.BAD_EXIT, Flag.MIDDLE_ONLY, Flag.NO_ED_CONSENSUS, Flag.STALE_DESC} else RichStr(flag, Color.GREEN)
+                RichStr(flag, Color.RED)
+                if flag
+                in {
+                    Flag.BAD_EXIT,
+                    Flag.MIDDLE_ONLY,
+                    Flag.NO_ED_CONSENSUS,
+                    Flag.STALE_DESC,
+                }
+                else RichStr(flag, Color.GREEN)
             )
             line += str(colored_flag) + strings.SEPARATORS[strings.Separator.COMMA]
             line_len += len(flag + strings.SEPARATORS[strings.Separator.COMMA])
 
         if line:
-            Pen.draw(self, line.rstrip(strings.SEPARATORS[strings.Separator.COMMA]), line_pos_y, 9)
+            Pen.draw(
+                self,
+                line.rstrip(strings.SEPARATORS[strings.Separator.COMMA]),
+                line_pos_y,
+                9,
+            )
 
     def draw_hints(self) -> None:
         Pen.erase_in_frame(self, art.hints_frame)
@@ -299,7 +422,9 @@ class Paper:
         if info["bootstrap_percent"] < 100:
             hints += Paper._wrap_hint(
                 strings.HINT_TITLES[strings.Hint.BOOTSTRAP],
-                strings.HINT_DESCRIPTIONS[strings.Hint.BOOTSTRAP].format(phase=info["bootstrap_phase"], percent=info["bootstrap_percent"]),
+                strings.HINT_DESCRIPTIONS[strings.Hint.BOOTSTRAP].format(
+                    phase=info["bootstrap_phase"], percent=info["bootstrap_percent"]
+                ),
             )
 
         # Network statuses
@@ -316,14 +441,21 @@ class Paper:
 
         # Relay network statuses
         if not info["reachability"]:
-            if self.app_data.orport != strings.MISC_STRINGS[strings.Misc.UNKNOWN] and self.app_data.dirport != strings.MISC_STRINGS[strings.Misc.UNKNOWN]:
-                ports = strings.MISC_STRINGS[strings.Misc.HINT_ORPORT_AND_DIRPORT_UNREACHABLE].format(
-                    orport=self.app_data.orport, dirport=self.app_data.dirport
-                )
+            if (
+                self.app_data.orport != strings.MISC_STRINGS[strings.Misc.UNKNOWN]
+                and self.app_data.dirport != strings.MISC_STRINGS[strings.Misc.UNKNOWN]
+            ):
+                ports = strings.MISC_STRINGS[
+                    strings.Misc.HINT_ORPORT_AND_DIRPORT_UNREACHABLE
+                ].format(orport=self.app_data.orport, dirport=self.app_data.dirport)
             elif self.app_data.orport != strings.MISC_STRINGS[strings.Misc.UNKNOWN]:
-                ports = strings.MISC_STRINGS[strings.Misc.HINT_ORPORT_UNREACHABLE].format(orport=self.app_data.orport)
+                ports = strings.MISC_STRINGS[
+                    strings.Misc.HINT_ORPORT_UNREACHABLE
+                ].format(orport=self.app_data.orport)
             else:
-                ports = strings.MISC_STRINGS[strings.Misc.HINT_DIRPORT_UNREACHABLE].format(dirport=self.app_data.dirport)
+                ports = strings.MISC_STRINGS[
+                    strings.Misc.HINT_DIRPORT_UNREACHABLE
+                ].format(dirport=self.app_data.dirport)
 
             hints += Paper._wrap_hint(
                 strings.HINT_TITLES[strings.Hint.REACHABILITY],
@@ -354,12 +486,16 @@ class Paper:
         if self.app_data.version_status == VersionStatus.OBSOLETE:
             hints += Paper._wrap_hint(
                 strings.HINT_TITLES[strings.Hint.VERSION_OBSOLETE],
-                strings.HINT_DESCRIPTIONS[strings.Hint.VERSION_OBSOLETE].format(version=self.app_data.recommended_version),
+                strings.HINT_DESCRIPTIONS[strings.Hint.VERSION_OBSOLETE].format(
+                    version=self.app_data.recommended_version
+                ),
             )
         elif self.app_data.version_status == VersionStatus.UNRECOMMENDED:
             hints += Paper._wrap_hint(
                 strings.HINT_TITLES[strings.Hint.VERSION_UNRECOMMENDED],
-                strings.HINT_DESCRIPTIONS[strings.Hint.VERSION_UNRECOMMENDED].format(version=self.app_data.recommended_version),
+                strings.HINT_DESCRIPTIONS[strings.Hint.VERSION_UNRECOMMENDED].format(
+                    version=self.app_data.recommended_version
+                ),
             )
         if Flag.STABLE not in self.app_data.flags and not self.app_data.bridge_relay:
             hints += Paper._wrap_hint(
@@ -387,20 +523,33 @@ class Paper:
 
         frame_vert_space = len(art.hints_frame.splitlines()) - 2
         hints_lines = hints.rstrip().splitlines()
-        self.hints_scroll_index = max(0, min(self.hints_scroll_index, len(hints_lines) - frame_vert_space))
-        hints_view = strings.SEPARATORS[strings.Separator.NEW_LINE].join(hints_lines[0 + self.hints_scroll_index : frame_vert_space + self.hints_scroll_index])
+        self.hints_scroll_index = max(
+            0, min(self.hints_scroll_index, len(hints_lines) - frame_vert_space)
+        )
+        hints_view = strings.SEPARATORS[strings.Separator.NEW_LINE].join(
+            hints_lines[
+                0 + self.hints_scroll_index : frame_vert_space + self.hints_scroll_index
+            ]
+        )
         Pen.draw(self, hints_view, 2, 2)
 
-        scroll_up = RichStr(art.hint_menu_scroll_up, color=Color.GREY) if self.hints_scroll_index == 0 else art.hint_menu_scroll_up
+        scroll_up = (
+            RichStr(art.hint_menu_scroll_up, color=Color.GREY)
+            if self.hints_scroll_index == 0
+            else art.hint_menu_scroll_up
+        )
         scroll_down = (
             RichStr(art.hint_menu_scroll_down, color=Color.GREY)
-            if self.hints_scroll_index == frame_vert_space - 2 or len(hints_lines) <= frame_vert_space
+            if self.hints_scroll_index == frame_vert_space - 2
+            or len(hints_lines) <= frame_vert_space
             else art.hint_menu_scroll_down
         )
 
         Pen.draw(
             self,
-            art.hint_menu.format(hint_menu_scroll_up=scroll_up, hint_menu_scroll_down=scroll_down),
+            art.hint_menu.format(
+                hint_menu_scroll_up=scroll_up, hint_menu_scroll_down=scroll_down
+            ),
             18,
             24,
         )
@@ -409,6 +558,15 @@ class Paper:
     def _wrap_hint(title: str, text: str) -> str:
         frame_horz_space = len(art.hints_frame.splitlines()[0]) - 2
         if title:
-            return textwrap.fill(f"{RichStr(title, effects=(Effect.BOLD,))}: {text}", frame_horz_space) + strings.SEPARATORS[strings.Separator.NEW_LINE] * 2
+            return (
+                textwrap.fill(
+                    f"{RichStr(title, effects=(Effect.BOLD,))}: {text}",
+                    frame_horz_space,
+                )
+                + strings.SEPARATORS[strings.Separator.NEW_LINE] * 2
+            )
         else:
-            return textwrap.fill(text, frame_horz_space) + strings.SEPARATORS[strings.Separator.NEW_LINE] * 2
+            return (
+                textwrap.fill(text, frame_horz_space)
+                + strings.SEPARATORS[strings.Separator.NEW_LINE] * 2
+            )
