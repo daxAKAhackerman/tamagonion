@@ -18,7 +18,7 @@ def main() -> None:
         socket_file=args.socket_file,
     )
     app_data = AppData(relay_manager)
-    paper = Paper(app_data)
+    paper = Paper(app_data, args.headless)
 
     if args.custom_renderer is not None:
         try:

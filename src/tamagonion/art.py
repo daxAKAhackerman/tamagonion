@@ -21,6 +21,27 @@ home_frame = f"""┌────────────────────
 │                                              │
 └───────────────────────|{RichStr("H", effects=(Effect.BOLD, Effect.UNDERLINE))}ome│{RichStr("S", effects=(Effect.BOLD, Effect.UNDERLINE))}tatus│H{RichStr("i", effects=(Effect.BOLD, Effect.UNDERLINE))}nts│{RichStr("Q", effects=(Effect.BOLD, Effect.UNDERLINE))}uit┘"""
 
+headless_home_frame = """┌──────────────────────────────────────────────┐
+│                                              │
+│                                              │
+│                                              │
+│                                              │
+│                                              │
+│                                              │
+│                                              │
+│                                              │
+│                                              │
+│                                              │
+│                                              │
+│                                              │
+│                                              │
+│                                              │
+│                                              │
+│                                              │
+│                                              │
+│                                              │
+└──────────────────────────────────────────────┘"""
+
 status_frame = """┌Status──────────────────────────────────────┐
 │                                            │
 │                                            │
@@ -59,7 +80,9 @@ hints_frame = """┌Hints──────────────────�
 └────────────────────────────────────────────┘"""
 
 hint_menu_scroll_up = f"Scroll {RichStr('u', effects=(Effect.BOLD, Effect.UNDERLINE))}p"
-hint_menu_scroll_down = f"Scroll {RichStr('d', effects=(Effect.BOLD, Effect.UNDERLINE))}own"
+hint_menu_scroll_down = (
+    f"Scroll {RichStr('d', effects=(Effect.BOLD, Effect.UNDERLINE))}own"
+)
 hint_menu = "|{hint_menu_scroll_up}|{hint_menu_scroll_down}"
 
 stinky_base = [
