@@ -1,8 +1,19 @@
+import importlib.util
 import re
+import sys
 from enum import StrEnum
+from typing import Protocol
 
 OPENING_TAG_REGEX = re.compile(r"\[([A-Z]+?)\]")
 CLOSING_TAG_REGEX = re.compile(r"\[\/([A-Z]+?)\]")
+
+
+class RendererProtocol(Protocol):
+    def setup(self) -> None: ...
+
+    def tear_down(self) -> None: ...
+
+    def render(self, buffer: str) -> None: ...
 
 
 class AnsiEscapeSequences(StrEnum):
@@ -60,7 +71,9 @@ class DefaultRenderer:
 
         return buffer
 
-    def _get_unique_tag_matches(self, buffer: str, regex: re.Pattern[str]) -> set[tuple[str, str]]:
+    def _get_unique_tag_matches(
+        self, buffer: str, regex: re.Pattern[str]
+    ) -> set[tuple[str, str]]:
         matches = list(re.finditer(regex, buffer))
         return {(match.group(0), match.group(1)) for match in matches}
 
@@ -83,3 +96,26 @@ class DefaultRenderer:
     @staticmethod
     def exit_alt_buffer() -> None:
         print(AnsiEscapeSequences.EXIT_ALT_BUFFER, end="")
+
+
+def get_custom_renderer(path: str, class_name: str) -> type[RendererProtocol]:
+    spec = importlib.util.spec_from_file_location("custom_render", path)
+    if spec is None:
+        print(f"[!] Could not find module file {path}", file=sys.stderr)
+        sys.exit(1)
+
+    custom_render = importlib.util.module_from_spec(spec)
+
+    if spec.loader is None:
+        print(f"[!] Could not load module {spec.name}", file=sys.stderr)
+        sys.exit(1)
+
+    spec.loader.exec_module(custom_render)
+
+    try:
+        renderer: type[RendererProtocol] = getattr(custom_render, class_name)
+    except AttributeError:
+        print(f"[!] Could not find class {class_name}", file=sys.stderr)
+        sys.exit(1)
+
+    return renderer

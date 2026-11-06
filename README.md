@@ -182,6 +182,15 @@ echo 'bind-key T display-popup -E -w 50 -h 22 -x R -y S -- env TAMAGONION_PASSWO
 pane=$(tmux split-window -h -d -l 48 -P -F '#{pane_id}'); tmux split-window -v -d -l 20 -t "$pane" env TAMAGONION_PASSWORD=my_password tamagonion
 ```
 
+## Custom renderers
+
+Looking at Stinky through the console is pretty cool, but you know what's cooler? Looking at it on your smart fridge! Custom renderers allow you to code your own renderer plugins so that you can process the frames however you want, and send them to any output device. This can be achieved in a few simple steps: 
+
+1. Create a python file that contains a class that implements the `RendererProtocol` as defined in `src/tamagonion/render.py`.
+2. Implement the `setup` and `tear_down` methods. `setup` will be called once before rendering starts, and `tear_down` once when you exit the program.
+3. Implement the `render` method, which receives a single argument `buffer`. This is the method responsible for processing the frame (ex: handling color and effect codes) and sending them to the output device (over TCP for example). 
+4. Start tamagonion with `--custom-renderer path/to/my/file.py:MyRenderClass`. You can also add `--headless` if you want to disable keyboard input. 
+
 ## You may also like...
 
 - [Testing Tor Network](https://github.com/daxAKAhackerman/testing-tor-network) - CLI tool to setup a testing Tor network with Docker
