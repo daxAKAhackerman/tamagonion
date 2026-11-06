@@ -1,12 +1,11 @@
 import argparse
-import importlib
 import sys
 from time import sleep
 
 from tamagonion.app_data import AppData
 from tamagonion.draw import Paper, Screen, StopDrawingException
 from tamagonion.relay_manager import RelayManager
-from tamagonion.render import DefaultRenderer, RendererProtocol
+from tamagonion.render import DefaultRenderer, RendererProtocol, get_custom_renderer
 
 
 def main() -> None:
@@ -23,22 +22,12 @@ def main() -> None:
 
     if args.custom_renderer is not None:
         try:
-            module_name, class_name = args.custom_renderer.split(":")
+            file_name, class_name = args.custom_renderer.split(":")
         except ValueError:
-            print("[!] Malformated custom renderer", file=sys.stderr)
+            print("[!] Malformed custom renderer", file=sys.stderr)
             sys.exit(1)
 
-        try:
-            renderer_module = importlib.import_module(module_name)
-        except ModuleNotFoundError:
-            print(f"[!] Could not find module {module_name}", file=sys.stderr)
-            sys.exit(1)
-
-        try:
-            renderer: RendererProtocol = getattr(renderer_module, class_name)()
-        except AttributeError:
-            print(f"[!] Could not find class {class_name}", file=sys.stderr)
-            sys.exit(1)
+        renderer: RendererProtocol = get_custom_renderer(file_name, class_name)()
     else:
         renderer: RendererProtocol = DefaultRenderer()
 
@@ -113,13 +102,13 @@ def get_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--headless",
-        help="Runs Tamagonion without key interactions. Usefull when pushing frames to a custom renderer.",
+        help="Runs Tamagonion without key interactions. Useful when pushing frames to a custom renderer.",
         required=False,
         action="store_true",
     )
     parser.add_argument(
         "--custom-renderer",
-        help="Tamagonion will render to stdout by default. However, if you want to send the frames somewhere else, you can pass a custom renderer class in the form <module>:<ClassName>. See README for more detail.",
+        help="Tamagonion will render to stdout by default. However, if you want to send the frames somewhere else, you can pass a custom renderer class in the form <module/file.py>:<ClassName>. See README for more detail.",
         required=False,
         default=None,
     )
