@@ -86,11 +86,15 @@ class Paper:
         ).rstrip(strings.SEPARATORS[strings.Separator.NEW_LINE])
 
     def setup_scan_key(self) -> None:
+        if self.headless:
+            return
         self.saved_fd = sys.stdin.fileno()
         self.saved_term_setting = termios.tcgetattr(self.saved_fd)
         tty.setcbreak(self.saved_fd)
 
     def tear_down_scan_key(self) -> None:
+        if self.headless:
+            return
         termios.tcsetattr(self.saved_fd, termios.TCSADRAIN, self.saved_term_setting)
 
     @staticmethod
