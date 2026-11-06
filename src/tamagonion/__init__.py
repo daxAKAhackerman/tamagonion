@@ -1,20 +1,46 @@
 import argparse
+import importlib
 import sys
 from time import sleep
 
 from tamagonion.app_data import AppData
 from tamagonion.draw import Paper, Screen, StopDrawingException
 from tamagonion.relay_manager import RelayManager
-from tamagonion.render import DefaultRenderer
+from tamagonion.render import DefaultRenderer, RendererProtocol
 
 
 def main() -> None:
     args = get_args()
 
-    relay_manager = RelayManager(ip_addr=args.ip, port=args.port, password=args.password, socket_file=args.socket_file)
+    relay_manager = RelayManager(
+        ip_addr=args.ip,
+        port=args.port,
+        password=args.password,
+        socket_file=args.socket_file,
+    )
     app_data = AppData(relay_manager)
     paper = Paper(app_data)
-    renderer = DefaultRenderer()
+
+    if args.custom_renderer is not None:
+        try:
+            module_name, class_name = args.custom_renderer.split(":")
+        except ValueError:
+            print("[!] Malformated custom renderer", file=sys.stderr)
+            sys.exit(1)
+
+        try:
+            renderer_module = importlib.import_module(module_name)
+        except ModuleNotFoundError:
+            print(f"[!] Could not find module {module_name}", file=sys.stderr)
+            sys.exit(1)
+
+        try:
+            renderer: RendererProtocol = getattr(renderer_module, class_name)()
+        except AttributeError:
+            print(f"[!] Could not find class {class_name}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        renderer: RendererProtocol = DefaultRenderer()
 
     renderer.setup()
 
@@ -25,26 +51,31 @@ def main() -> None:
             paper.draw()
             renderer.render(paper.buffer)
 
-            for _i in range(20):
-                if key := paper.scan_key():
-                    match key.lower():
-                        case "h":
-                            paper.active_screen = Screen.HOME
-                        case "s":
-                            paper.active_screen = Screen.STATUS
-                        case "i":
-                            paper.hints_scroll_index = 0
-                            paper.active_screen = Screen.HINT
-                        case "u":
-                            if paper.active_screen == Screen.HINT:
-                                paper.hints_scroll_index = max(0, paper.hints_scroll_index - 1)
-                        case "d":
-                            if paper.active_screen == Screen.HINT:
-                                paper.hints_scroll_index += 1
-                        case "q":
-                            raise StopDrawingException
-                    break
-                sleep(0.05)
+            if args.headless is not True:
+                for _i in range(20):
+                    if key := paper.scan_key():
+                        match key.lower():
+                            case "h":
+                                paper.active_screen = Screen.HOME
+                            case "s":
+                                paper.active_screen = Screen.STATUS
+                            case "i":
+                                paper.hints_scroll_index = 0
+                                paper.active_screen = Screen.HINT
+                            case "u":
+                                if paper.active_screen == Screen.HINT:
+                                    paper.hints_scroll_index = max(
+                                        0, paper.hints_scroll_index - 1
+                                    )
+                            case "d":
+                                if paper.active_screen == Screen.HINT:
+                                    paper.hints_scroll_index += 1
+                            case "q":
+                                raise StopDrawingException
+                        break
+                    sleep(0.05)
+            else:
+                sleep(1)
     except KeyboardInterrupt, StopDrawingException:
         pass
     finally:
@@ -63,11 +94,35 @@ def get_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
-        "-i", "--ip", help="IP of the Tor relay where the control protocol listens. Can also be a hostname. Defaults to 127.0.0.1.", default="127.0.0.1"
+        "-i",
+        "--ip",
+        help="IP of the Tor relay where the control protocol listens. Can also be a hostname. Defaults to 127.0.0.1.",
+        default="127.0.0.1",
     )
-    parser.add_argument("-p", "--port", help="Control port. Defaults to 9051.", default="9051")
-    parser.add_argument("-P", "--password", help="Control port password, if any", required=False)
-    parser.add_argument("-s", "--socket-file", help="Path to the socket file to use instead of an IP", required=False)
+    parser.add_argument(
+        "-p", "--port", help="Control port. Defaults to 9051.", default="9051"
+    )
+    parser.add_argument(
+        "-P", "--password", help="Control port password, if any", required=False
+    )
+    parser.add_argument(
+        "-s",
+        "--socket-file",
+        help="Path to the socket file to use instead of an IP",
+        required=False,
+    )
+    parser.add_argument(
+        "--headless",
+        help="Runs Tamagonion without key interactions. Usefull when pushing frames to a custom renderer.",
+        required=False,
+        action="store_true",
+    )
+    parser.add_argument(
+        "--custom-renderer",
+        help="Tamagonion will render to stdout by default. However, if you want to send the frames somewhere else, you can pass a custom renderer class in the form <module>:<ClassName>. See README for more detail.",
+        required=False,
+        default=None,
+    )
 
     return parser.parse_args()
 

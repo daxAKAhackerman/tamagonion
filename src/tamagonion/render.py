@@ -1,8 +1,17 @@
 import re
 from enum import StrEnum
+from typing import Protocol
 
 OPENING_TAG_REGEX = re.compile(r"\[([A-Z]+?)\]")
 CLOSING_TAG_REGEX = re.compile(r"\[\/([A-Z]+?)\]")
+
+
+class RendererProtocol(Protocol):
+    def setup(self) -> None: ...
+
+    def tear_down(self) -> None: ...
+
+    def render(self, buffer: str) -> None: ...
 
 
 class AnsiEscapeSequences(StrEnum):
@@ -60,7 +69,9 @@ class DefaultRenderer:
 
         return buffer
 
-    def _get_unique_tag_matches(self, buffer: str, regex: re.Pattern[str]) -> set[tuple[str, str]]:
+    def _get_unique_tag_matches(
+        self, buffer: str, regex: re.Pattern[str]
+    ) -> set[tuple[str, str]]:
         matches = list(re.finditer(regex, buffer))
         return {(match.group(0), match.group(1)) for match in matches}
 
